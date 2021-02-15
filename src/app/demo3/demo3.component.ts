@@ -1,52 +1,63 @@
 import {
-  Component,
-  ViewChild,
-  OnInit,
-  ElementRef,
-  AfterViewInit,
-  ComponentFactoryResolver,
-  ViewContainerRef,
-  Renderer2
+   AfterViewInit,
+   Component,
+   ComponentFactoryResolver,
+   NgModule,
+   OnInit,
+   Renderer2,
+   ViewChild,
+   ViewContainerRef,
+   ElementRef
 } from '@angular/core';
-
-import { FormBuilder, FormGroup, FormControl, FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-
-import { GeocodingService } from '../services/geocoding.service';
-import { DataService } from '../services/data.service';
-import { MapService } from '../services/map.service';
-
-import * as d3 from 'd3';
+import {ThemeModule} from "../@theme/theme.module";
+import {NgxEchartsModule} from "ngx-echarts";
+import {
+   NbButtonModule,
+   NbCardModule, NbDialogService,
+   NbIconModule,
+   NbListModule, NbProgressBarModule,
+   NbSelectModule,
+   NbTabsetModule, NbToastrService,
+   NbUserModule, NbWindowService
+} from "@nebular/theme";
 import * as L from 'leaflet';
-import * as moment from 'moment';
-import { legendColor } from 'd3-svg-legend';
+import {NgxChartsModule} from "@swimlane/ngx-charts";
+import {ChartModule} from "angular2-chartjs";
+import {LeafletModule} from "@asymmetrik/ngx-leaflet";
+import {ECommerceModule} from "../pages/e-commerce/e-commerce.module";
 
+import 'style-loader!leaflet/dist/leaflet.css';
+import {ActivatedRoute, Router} from "@angular/router";
+import {SchemaService} from "../services/schema.service";
+import {ConfigurationService} from "../services/configuration.service";
+import {FormBuilder, FormControl, FormGroup} from "@angular/forms";
+import {Options} from "ng5-slider";
+import * as d3 from "d3";
+import {GeoDataService} from "../services/geo-data.service";
+import {MapService} from "../services/map.service";
+import {GeocodingService} from "../services/geocoding.service";
+import {DataService} from "../services/data.service";
+import {legendColor} from "d3-svg-legend";
+import {Widget} from "../widget";
+import {EncrDecrService} from "../services/encr-decr.service";
+import {BarChartComponent} from "../pages/graphics/bar-chart/bar-chart.component";
+import {TreemapChartComponent} from "../pages/graphics/treemap-chart/treemap-chart.component";
 import { Marker } from '../marker';
-import { Mercator } from '../mercator';
-import { Location } from '../location';
-
-import { Subject } from 'rxjs/Subject';
-import { Observable } from 'rxjs/Observable';
-import { SchemaService } from '../services/schema.service';
-
-// widgets
-import { Widget } from '../widget';
-import { BarChartComponent } from '../bar-chart/bar-chart.component';
-import { LineChartComponent } from '../line-chart/line-chart.component';
-import { WidgetHostDirective } from '../widget-host.directive';
-import { CalendarComponent } from '../calendar/calendar.component';
-import { ConfigurationService } from '../services/configuration.service';
-import { MatSidenav } from '@angular/material';
-import { TemporalBandComponent } from '../temporal-band/temporal-band.component';
+import {Subscription} from "rxjs";
+import {DragulaService} from "ng2-dragula";
+import {ToastrComponent} from "../pages/modal-overlays/toastr/toastr.component";
+import {LineChartComponent} from "../pages/graphics/line-chart/line-chart.component";
+import {Http} from "@angular/http";
+import {DialogEquipesComponent, MunElement} from "../pages/modal-overlays/dialogEquipes/dialog-equipes.component";
 
 interface WidgetType {
-  key: string;
-  type: string;
-  widget: Widget;
+   key: string;
+   type: string;
+   widget: Widget;
 }
 
 interface DimConstraints {
-  [key: string]: string;
+   [key: string]: string;
 }
 
 @Component({
@@ -54,528 +65,1745 @@ interface DimConstraints {
   templateUrl: './demo3.component.html',
   styleUrls: ['./demo3.component.scss']
 })
+
+@NgModule({
+   imports: [
+      ThemeModule,
+      NbCardModule,
+      NbUserModule,
+      NbButtonModule,
+      NbIconModule,
+      NbTabsetModule,
+      NbSelectModule,
+      NbListModule,
+      ChartModule,
+      NbProgressBarModule,
+      NgxEchartsModule,
+      NgxChartsModule,
+      LeafletModule,
+      ECommerceModule
+   ],
+   declarations: [
+   ],
+   exports: [
+   ]
+})
 export class Demo3Component implements OnInit, AfterViewInit {
-  @ViewChild('sidenav') sidenav: MatSidenav;
-  @ViewChild('mapwidgets') mapwidgets: ElementRef;
 
-  private title = 'app';
-  private marker: Marker;
-  private CanvasLayer: L.GridLayer;
+   @ViewChild('container', { read: ViewContainerRef, static: true }) container: ViewContainerRef;
+   //@ViewChild('containerlarge', { read: ViewContainerRef, static: true }) containerLarge: ViewContainerRef;
+   @ViewChild('mapwidgets', {static: true}) mapwidgets: ElementRef;
 
-  // schema
-  ///////////////////////////////////
-  private aggr: string;
-  dataset: any;
+   private widgets: Array<WidgetType> = [];
 
-  // map card
-  ///////////////////////////////////
-  currentZoom = 0;
-  maximumZoom = 0;
+   private temporal: DimConstraints = {};
+   private bar_categorical: DimConstraints = {};
+   private treemap_categorical: DimConstraints = {};
 
-  currentCount = 0;
-  maximumCount = 0;
+   private title = 'app';
+   private marker: Marker;
 
-  // queries
-  ///////////////////////////////////
-  private region: DimConstraints = {};
-  private temporal: DimConstraints = {};
-  private categorical: DimConstraints = {};
+   dataset: any;
 
-  // widgets
-  //////////////////////////////////
-  @ViewChild('container', { read: ViewContainerRef }) container: ViewContainerRef;
-  private widgets: Array<WidgetType> = [];
+   options: FormGroup;
 
-  mode = new FormControl('over');
-  options: FormGroup;
+   private aggr: string;
 
-  bandQuantiles = '0.5';
+   bar_categorical_restrictions = {
+      sus_cont_ciap: [
+         // {minValue: 3, maxValue: 5, count: 0, maxCount: 0, filter: '-', viewValue: ' de semanas de gestação', dimName: 'semanas_gestacional'},
+         // {minValue: 1, maxValue: 5, count: 0, maxCount: 0, filter: '-', viewValue: ' de qtd. de CIAPs', dimName: 'qtd_ciaps'},
+      ],
+      sus_ciap: [],
+      example: [],
+      spotifyvis: [],
+      qdscovid: [],
+   };
 
-  aggr_values = [
-    { value: 'count', viewValue: 'Count' },
-    // { value: 'mean', viewValue: 'Mean' },
-    // { value: 'variance', viewValue: 'Variance' },
-    // { value: 'quantile', viewValue: 'Quantile' },
-    { value: 'cdf', viewValue: 'CDF' }
-  ];
+   notRefreshTreemapGraphs = [];
 
-  aggr_map = {
-    'count': {
-      key: 'count',
-      label: 'count',
-      formatter: d3.format('.2s')
-    },
-    'mean': {
-      key: 'average',
-      sufix: '_g',
-      label: 'value',
-      formatter: d3.format('.2s')
-    },
-    'variance': {
-      key: 'variance',
-      sufix: '_g',
-      label: 'value',
-      formatter: d3.format('.2s')
-    },
-    'quantile': {
-      key: 'quantile',
-      sufix: '_t',
-      label: 'value',
-      formatter: d3.format('.2s')
-    },
-    'cdf': {
-      key: 'inverse',
-      sufix: '_t',
-      label: 'quantile',
-      formatter: d3.format('.2f')
-    },
-  };
+   current_modal = null;
+   project_hash_value = "";
+   key_encr = "combaftp";
 
-  geometry_values = [
-    { value: 'rect', viewValue: 'Rectangle' },
-    { value: 'circle', viewValue: 'Circle' }
-  ];
+   optionsCategoricalRestrictions: Options = {
+      floor: 0,
+      ceil: 8,
+      showTicks: true,
+      showSelectionBar: true,
+      translate: (value: number): string => {
+         if (value === 0) {
+            return '0';
+         }
+         else {
+            return '10' + value.toString().sup();
+         }
+      }
+   };
 
-  composition_values = [
-    { value: 'lighter', viewValue: 'Lighter' },
-    { value: 'color', viewValue: 'Color' }
-  ];
+   setCategoricalRestrictions(event, entry) {
+       this.loadWidgetsData();
+   }
 
-  dataset_values = [
-    { value: 'on_time_performance_2014', viewValue: 'Flights 2014' }
-  ];
+   color: any;
 
-  color: any;
+   aggr_map = {
+      'count': {
+         key: 'count',
+         sufix: undefined,
+         label: 'Contagem',
+         formatter: d3.format('.2s')
+      }
+   };
 
-  payload_range = [
-    'rgba(103,  0, 31, 0.75)',
-    'rgba(178, 24, 43, 0.75)',
-    'rgba(214, 96, 77, 0.75)',
-    'rgba(244,165,130, 0.75)',
-    'rgba(253,219,199, 0.75)',
-    'rgba(209,229,240, 0.75)',
-    'rgba(146,197,222, 0.75)',
-    'rgba( 67,147,195, 0.75)',
-    'rgba( 33,102,172, 0.75)',
-    'rgba(  5, 48, 97, 0.75)'
-  ];
+   currRegion = 0;
 
-  color_map = {
-    'count': (count) => {
-      const lc = Math.log(count) / Math.log(100);
+   info_name = '';
+   info_events = [0, 0];
+   info_pop = [0, 0];
+   info_den = [0, 0];
 
-      const r = Math.floor(256 * Math.min(1, lc));
-      const g = Math.floor(256 * Math.min(1, Math.max(0, lc - 1)));
-      const b = Math.floor(256 * Math.min(1, Math.max(0, lc - 2)));
+   ableToGetData = true;
 
-      return 'rgba(' + r + ',' + g + ',' + b + ',' + 0.75 + ')';
-    },
-    'payload': (count) => d3.scaleQuantize<string>()
-      .domain([parseFloat(this.getPayloadInfo('min_value')), parseFloat(this.getPayloadInfo('max_value'))])
-      .range(this.payload_range)(count),
-  };
+   maximumPop = 0;
+   currentZoom = 0;
+   maximumZoom = 0;
+
+   range_map = {
+      'normal': ['#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#253494', '#081d58'],
+      'normal_2': ['#ffffd9','#edf8b1','#c7e9b4','#7fcdbb','#41b6c4','#1d91c0','#225ea8','#253494','#081d58', '#cb181d', '#67000d'],
+      // 'normal_2': ['#fcf9aa', '#fce11d', '#f9Be04', '#f98e04', '#ed5603', '#d21a7c', '#9f059b', '#5b0298', '#120476']
+   }
+   color_map = {
+      'normal': (dim) => d3.scaleQuantile<string>()
+         .domain(this.domainQuantile(this.geo.json_min_max.get(dim), this.range_map.normal_2.length))
+         //.domain(this.geo.json_min_max.get(dim))
+         .range(this.range_map.normal_2),
+
+      'normal_pop': (dim) => d3.scaleQuantile<string>()
+         .domain(this.domainQuantile(this.geo.json_min_max_pop.get(dim), this.range_map.normal_2.length))
+         //.domain(this.geo.json_min_max_pop.get(dim))
+         .range(this.range_map.normal_2),
+
+      'normal_den': (dim) => d3.scaleQuantile<string>()
+         .domain(this.domainOutlier(this.geo.json_min_max_den.get(dim), this.range_map.normal.length))
+         .range(this.rangeOutlier(this.geo.json_min_max_den.get(dim), this.range_map.normal)),
+
+      'ryw': (count) => {
+         const lc = Math.log(count) / Math.log(100);
+
+         const r = Math.floor(256 * Math.min(1, lc));
+         const g = Math.floor(256 * Math.min(1, Math.max(0, lc - 1)));
+         const b = Math.floor(256 * Math.min(1, Math.max(0, lc - 2)));
+
+         return 'rgba(' + r + ',' + g + ',' + b + ',' + 0.75 + ')';
+      }
+   };
+
+   aggr_values = [
+      { value: 'count', viewValue: 'Contagem' }
+   ];
+
+   health = {
+      visible: true
+   };
+   population = {
+      visible: true
+   };
+   density = {
+      visible: true
+   };
+
+   optionsRegions = [{value: 0, label: "Estados"}, {value:1, label: "Municípios"}];
+
+   radioGroupValue = 0;
+
+   private MiddleRegionLayer: L.GridLayer;
+   private BottomRegionLayer: L.GridLayer;
+   private TopRegionLayer: L.GridLayer;
+   private BottomPopRegionLayer: L.GridLayer;
+   private TopPopRegionLayer: L.GridLayer;
+   private BottomDenRegionLayer: L.GridLayer;
+   private TopDenRegionLayer: L.GridLayer;
+
+   private layersControl;
+   private toastrComponent;
+
+   domainQuantile([min, max], num) {
+      let base = Math.pow(max/min, 1/(num-1));
+      let exp = Math.log(min)/Math.log(base);
+      let domain = [];
+      for (var i = 0; i < num; i++) {
+         domain[i] = Math.pow(base, exp) * Math.pow(base, i);
+      }
+      return domain;
+   }
+   domainOutlier([min, max, q1, q3, iqr], num) {
+      num = num + 1;
+      let domain = [];
+      let lower, upper;
+      if (min < q1 - 3 * iqr) {
+         lower = q1 - 1.5 * iqr;
+         domain.push(min);
+         domain.push(q1 - 3 * iqr);
+      }
+      else if (min < q1 - 1.5 * iqr) {
+         lower = q1 - 1.5 * iqr;
+         domain.push(min);
+      }
+      else {
+         lower = min;
+      }
+
+      if (max > q3 + 3 * iqr) {
+         upper = q3 + 1.5 * iqr;
+      }
+      else if (max > q3 + 1.5 * iqr) {
+         upper = q3 + 1.5 * iqr;
+      }
+      else {
+         upper = max;
+      }
+
+      for (var i = 0; i < num; i++) {
+         domain.push(lower + (upper - lower)/(num - 1) * i);
+      }
+
+      if (max > q3 + 3 * iqr) {
+         domain.push(q3 + 3 * iqr);
+         domain.push(max);
+      }
+      else if (max > q3 + 1.5 * iqr) {
+         domain.push(max);
+      }
+      return domain;
+   }
+   rangeOutlier([min, max, q1, q3, iqr], range) {
+      let newRange = range;
+      if (min < q1 - 3 * iqr) {
+         newRange = ['#67000d', '#cb181d'].concat(newRange);
+      }
+      else if (min < q1 - 1.5 * iqr) {
+         newRange = ['#cb181d'].concat(newRange);
+      }
+
+      if (max > q3 + 3 * iqr) {
+         newRange = newRange.concat(['#cb181d', '#67000d']);
+      }
+      else if (max > q3 + 1.5 * iqr) {
+         newRange = newRange.concat(['#cb181d']);
+      }
+      return newRange;
+   }
+
+   population_code(feature, region?) {
+      if (region == undefined) {
+         region = this.currRegion;
+      }
+      switch (region) {
+         case 0:
+            return feature.properties.population;
+         case 1:
+            return feature.properties.population;
+         default:
+            return feature.properties.population;
+      }
+   }
+   getCountPop(feature?) {
+      let self = this;
+      if (self.geo.json_value.get(this.getCurrRegion()) == undefined) {
+         return this.maximumPop;
+      }
+
+      if (self.geo.json_value.get(this.getCurrRegion()).size == 0) {
+         return this.maximumPop;
+      }
+      if (feature) {
+         return this.population_code(feature);
+      }
+      let selected = this.geo.json_selected.get(this.getCurrRegion());
+
+      if (!selected || selected.size === 0) {
+         return this.maximumPop;
+      }
+      let values = 0;
+
+      selected.forEach((value, key, map) => {
+         if (value) {
+            values += this.population_code(key);
+         }
+      });
+
+      if (values == 0) {
+         return this.maximumPop;
+      }
+
+      return values;
+   }
+
+
+   region_name(feature, region?) {
+      if (region == undefined) {
+         region = this.currRegion;
+      }
+      switch (region) {
+         case 0:
+            return feature.properties.NOME_UF;
+         case 1:
+            return feature.properties.right_name;
+         default:
+            return feature.properties.NOME_UF;
+      }
+   }
+   region_code(feature, region?) {
+      if (region == undefined) {
+         region = this.currRegion;
+      }
+      switch (region) {
+         case 0:
+            return feature.properties.UF_05;
+         case 1:
+            return feature.properties.GEOCODIGO;
+         default:
+            return feature.properties.UF_05;
+      }
+   }
+   getRegionConst(feature?) {
+      let self = this;
+      if (feature) {
+         let r_code = String(this.region_code(feature));
+         let value_region = self.geo.json_value.get(this.getCurrRegion()).get(r_code.toUpperCase());
+         if (value_region != undefined) {
+            return '/const=' + this.getCurrRegion() + '.values.(' + value_region[0] + ')';
+         }
+      }
+
+      let output = "";
+      let idx = 0;
+      for (const dim of this.schemaService.getGlobal()["regionCategoricalDimension"]) {
+         if (self.geo.json_value.get(dim) == undefined) {
+            idx += 1;
+            continue;
+         }
+
+         if (self.geo.json_value.get(dim).size == 0) {
+            idx += 1;
+            continue;
+         }
+
+         let selected = this.geo.json_selected.get(dim);
+
+         if (!selected || selected.size === 0) {
+            idx += 1;
+            continue;
+         }
+
+         let valid = false;
+         let values = '/const=' + dim + '.values.(';
+
+         selected.forEach((value, key, map) => {
+            if (value) {
+               let r_code_2 = String(this.region_code(key, idx));
+               let value_one_selected = self.geo.json_value.get(dim).get(r_code_2.toUpperCase());
+               if (value_one_selected != undefined) {
+                  valid = true;
+                  values += + value_one_selected[0] + ':';
+               }
+            }
+         });
+
+         values = values.substr(0, values.length - 1);
+         values += ')';
+         output += valid ? values : '';
+
+         idx += 1;
+      }
+      return output;
+   }
+   getCurrentFeature() {
+      return this.geo.json_curr.get(this.getCurrRegion());
+   }
+
+   /*BAG = "SORTABLE_COMPONENT";*/
+   /*subs = new Subscription();*/
+
+   ibge2Equipe = new Map();
 
   constructor(
-    private configService: ConfigurationService,
-    private schemaService: SchemaService,
-
-    private mapService: MapService,
-    private dataService: DataService,
-    private geocodingService: GeocodingService,
-
-    private router: Router,
-    private activatedRoute: ActivatedRoute,
-
-    private renderer2: Renderer2,
-    private componentFactory: ComponentFactoryResolver,
-
-    private formBuilder: FormBuilder
-  ) { }
-
-  loadMapCard() {
-    this.currentZoom = this.mapService.map.getZoom();
-    this.maximumZoom = this.mapService.map.getMaxZoom();
-
-    this.dataService.query('/query/dataset=' + this.dataset.datasetName + '/aggr=count').subscribe(data => {
-      this.currentCount = data[0];
-      this.maximumCount = data[0];
-    });
+     private geo: GeoDataService,
+     private mapService: MapService,
+     private geocodingService: GeocodingService,
+     private configService: ConfigurationService,
+     private schemaService: SchemaService,
+     private activatedRoute: ActivatedRoute,
+     private dataService: DataService,
+     private formBuilder: FormBuilder,
+     private http: Http,
+     private componentFactory: ComponentFactoryResolver,
+     private renderer2: Renderer2,
+     private encrDecrService: EncrDecrService,
+     private windowService: NbWindowService,
+     private dragulaService: DragulaService,
+     private router: Router,
+     private toastrService: NbToastrService,
+     private dialogService: NbDialogService
+  ) {
+     /*this.subs.add(dragulaService.drop(this.BAG)
+        .subscribe(({ el }) => {
+           // @ts-ignore
+           let container_size = el.parentNode.getAttribute('image-size');
+           // @ts-ignore
+           let container_dim = el.getAttribute('dimension');
+           if(container_size=='large') el.setAttribute('class', this.getComponentSize(container_dim/!*, 0*!/));
+           else el.setAttribute('class', this.getComponentSize(container_dim/!*, this.dataset['qtd_graphics_small']*!/));
+           this.loadWidgetsData();
+        })
+     );*/
+     this.toastrComponent = new ToastrComponent(toastrService);
   }
 
-  loadLegend() {
-    const svg = d3.select('#svg-color-quant');
-    svg.selectAll('*').remove();
+   getComponentSize(dim) {
+      let size = 24;
+      if (this.dataset['graphics_small'].includes(dim)) size /= this.dataset['qtd_graphics_small'];
+      else size /= this.dataset['qtd_graphics_large'];
+      return 'col-'+(size*2).toString() + ' ' + 'col-sm-'+(size*2).toString() + ' ' + 'col-md-'+(size*2).toString() + ' ' + 'col-lg-'+(size*2).toString() + ' ' + 'col-xl-'+size.toString();
+      // return 'col-xl-'+size.toString();
+   }
 
-    if (this.options.get('aggr').value !== 'count') {
-      svg.append('g')
-        .attr('class', 'legendQuant')
-        .attr('transform', 'translate(0, 0)');
+   setAggr() {
+      this.updateAggr();
+      this.loadWidgetsData();
+      this.setMapData();
+   }
 
-      const domain: [number, number] = [parseFloat(this.getPayloadInfo('min_value')), parseFloat(this.getPayloadInfo('max_value'))];
+   getPayloadInfo(key: string) {
+      return d3.format('.2f')(this.dataset.payloadValues[this.options.get('payload').value][this.options.get('aggr').value][key]);
+   }
+   updateAggr() {
+      const type = this.options.get('aggr').value;
 
-      const colorLegend = legendColor()
-        .ascending(true)
-        .labelFormat(d3.format('.2'))
-        .scale(d3.scaleQuantize<string>().domain(domain).range(this.payload_range));
+      this.color = this.color_map['normal'];
 
-      svg.select('.legendQuant')
-        .call(colorLegend);
-    }
-  }
+      this.aggr = '/aggr=' + this.aggr_map[type].key;
 
-  loadLayer() {
-    this.CanvasLayer = new L.GridLayer({
-      updateWhenIdle: false,
-      updateWhenZooming: false,
-      keepBuffer: 2,
-      updateInterval: 1000
-    });
+      if (this.aggr_map[type].sufix !== undefined) {
+         this.aggr += '.' + this.options.get('payload').value + this.aggr_map[type].sufix;
+      }
 
-    this.CanvasLayer.createTile = (coords, done) => {
-      const query = '/query' +
-        '/dataset=' + this.dataset.datasetName +
-        this.getAggr() +
-        this.getCategoricalConst() +
-        this.getTemporalConst() +
-        '/const=' + this.dataset.spatialDimension[0] +
-        '.tile.(' + coords.x + ':' + coords.y + ':' + coords.z + ':' + this.options.get('resolution').value + ')' +
-        '/group=' + this.dataset.spatialDimension[0];
+      if (type === 'cdf' || type === 'quantile') {
+         this.aggr += '.(' + this.getPayloadInfo('value') + ')';
+      }
+   }
+   getMapPromises = () => {
+      let self = this;
 
-      const tile = document.createElement('canvas');
+      const constrainsts = self.getBarCategoricalConst() +
+         self.getTreemapCategoricalConst() +
+         self.getTemporalConst() +
+         self.getRegionConst();
 
-      const tileSize = this.CanvasLayer.getTileSize();
-      tile.setAttribute('width', tileSize.x.toString());
-      tile.setAttribute('height', tileSize.y.toString());
+      let promises = [];
 
-      const ctx = tile.getContext('2d');
-      ctx.globalCompositeOperation = this.options.get('composition').value;
-      ctx.clearRect(0, 0, tileSize.x, tileSize.y);
+      let getPromise = (dim) => {
+         return new Promise((resolve) => {
+            let query = '';
+            query = '/query' +
+               '/dataset=' + self.dataset.datasetName +
+               this.getAggr() +
+               constrainsts +
+               '/const=' + dim + '.values.(all)/group=' + dim;
+
+            // reset min_max values
+            self.geo.json_min_max.set(dim, [Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER]);
+            self.geo.json_min_max_pop.set(dim, [Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER]);
+            self.geo.json_min_max_den.set(dim, [Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER]);
+
+            self.dataService.query(query).subscribe(response => {
+               let value = response[0];
+
+               if (value.length) {
+                  let curr_minmax = self.geo.json_min_max.get(dim);
+                  self.geo.json_value.set(dim, new Map());
+
+                  value.map((el) => {
+                     if (!isNaN(el[1])) {
+                        curr_minmax[0] = Math.min(curr_minmax[0], el[1]);
+                        curr_minmax[1] = Math.max(curr_minmax[1], el[1]);
+                        self.geo.json_value.get(dim).set(this.dataset.aliases[dim][el[0]].toUpperCase(), [el[0], el[1]]);
+                     }
+                  });
+
+                  self.geo.json_min_max.set(dim, curr_minmax);
+               }
+
+               let densities:Array<number> = [];
+               let curr_minmax = self.geo.json_min_max_pop.get(dim);
+               L.geoJSON(this.geo.json.get(self.getCurrRegion()), {
+                  onEachFeature: (feature, layer) => {
+                     let r_code = String(this.region_code(feature));
+                     let nume = self.geo.json_value.get(dim).get(r_code.toUpperCase());
+                     let deno = this.population_code(feature);
+                     if (nume != undefined) {
+                        densities.push(nume[1] / deno);
+
+                        if (deno < curr_minmax[0])
+                           curr_minmax[0] = deno;
+                        if (deno > curr_minmax[1])
+                           curr_minmax[1] = deno;
+                     }
+                  }
+               });
+               self.geo.json_min_max_pop.set(dim, curr_minmax);
+
+               densities = densities.sort((a, b) => a - b);
+               let q1, q3;
+               if (densities.length % 2 != 0) {
+                  q1 = this.median(densities.slice(0, Math.floor(densities.length / 2)));
+                  q3 = this.median(densities.slice(Math.floor(densities.length / 2) + 1));
+               }
+               else {
+                  q1 = this.median(densities.slice(0, densities.length / 2));
+                  q3 = this.median(densities.slice(densities.length / 2));
+               }
+
+               if (q1 != undefined && q3 != undefined) {
+                  let iqr = q3 - q1;
+                  self.geo.json_min_max_den.set(dim, [densities[0], densities[densities.length - 1], q1, q3, iqr])
+               }
+
+               resolve(true);
+            });
+         });
+      };
+
+      // wait for all promises fineshes and then ...
+      promises.push(getPromise(self.getCurrRegion()));
+
+      return promises;
+   };
+
+   addLabel(feature){
+      let self = this;
+      let label = feature.properties.NOME_UF;
+      let desc = this.optionsRegions[0].label;
+      if(this.schemaService.global['regionCategoricalDimension'][1] == this.getCurrRegion()){
+         label = feature.properties.right_name;
+         desc = this.optionsRegions[1].label;
+      }
+      let labelParent = d3.select('#filter'+this.getCurrRegion());
+      let classSpan = 'nb-badge-custom';
+      if(labelParent.empty()){
+         /*if(d3.selectAll(".filter-field").size()%2==1){
+            classSpan = 'nb-badge-gray';
+         }*/
+         d3.select('#filters')
+            .append('div').attr('id', 'filter'+this.getCurrRegion())//.attr('color-class', classSpan).attr('class', 'filter-field')
+            .append('text').text(desc + ':\ ').style('color', '#717c95').style('padding', '0.25rem 0.05rem');
+      }
+      const filter = d3.select('#filter'+this.getCurrRegion()).append('span')
+         // .attr('class', d3.select('#filter'+this.getCurrRegion()).attr('color-class'))
+         .attr('class', classSpan)
+         .attr('id', this.getCurrRegion()+feature.properties.GEOCODIGO).text(label+'\u00A0\u00A0');
+      filter.append('svg').attr('width', 10).attr('height', 10)
+         .on('mouseover', function(){
+            d3.select(this).style('cursor', 'pointer');
+         })
+         .on('mouseout', function(){
+            d3.select(this).style('cursor', 'default');
+         })
+         .on('click', function () {
+            self.mapService.map.eachLayer(function (layer) {
+               if(typeof layer.feature !== 'undefined'){
+                  if(self.geo.json_selected.get(self.getCurrRegion()).get(feature) && layer.feature == feature){
+                     layer.fireEvent('click');
+                  }
+               }
+            });
+            self.removeLabel(feature);
+         }).append('g')
+         .append('path').attr('d', 'M 0 0 L 9 9 M 0 9 L 9 0').attr('stroke','white').attr('stroke-width', 2);
+   }
+   removeLabel(feature) {
+      d3.select('#' + this.getCurrRegion() + feature.properties.GEOCODIGO).remove();
+      let labelParent = d3.select('#filter' + this.getCurrRegion() + ' span');
+      if (labelParent.empty()) {
+         d3.select('#filter' + this.getCurrRegion()).remove();
+      }
+   }
+
+   loadLayer() {
+      let self = this;
+      let promises = self.getMapPromises();
+
+      Promise.all(promises).then(() => {
+         let getLayerColor = (feature, dim, key) => {
+            let r_code = String(this.region_code(feature));
+            let value = undefined;
+            if (key == "curr")
+               value = self.geo.json_value.get(dim).get(r_code.toUpperCase());
+            else if (key == "curr_pop") {
+               let nume = self.geo.json_value.get(dim).get(r_code.toUpperCase());
+               let deno = this.population_code(feature);
+               value = (nume == undefined) ? undefined : deno;
+            }
+            else if (key == "curr_den") {
+               let nume = self.geo.json_value.get(dim).get(r_code.toUpperCase());
+               let deno = this.population_code(feature);
+               value = (nume == undefined) ? undefined : (nume[1] / deno);
+            }
+            let style = <any>{};
+            if (value != undefined) {
+               if (key == "curr")
+                  style.fillColor = self.color(dim)(value[1]);
+               else if (key == "curr_pop")
+                  style.fillColor = self.color_map["normal_pop"](dim)(value);
+               else if (key == "curr_den")
+                  style.fillColor = self.color_map["normal_den"](dim)(value);
+               else
+                  style.fillColor = 'rgba(0,0,0,0)';
+               style.color = 'black';
+               style.weight = 0.2;
+               style.opacity = 0.70;
+               style.fillOpacity = 0.70;
+            }
+            else {
+               style.fillColor = 'rgba(0,0,0,0)';
+               style.color = 'black';
+               style.weight = 0.2;
+               style.opacity = 0.0;
+               style.fillOpacity = 0.0;
+            }
+
+            // selected layer
+            if (self.geo.json_selected.get(dim).get(feature)) {
+               style.weight = 4.0;
+               style.fillColor = 'darkorange';
+            }
+
+            return style;
+         };
+
+         let layerOnMouseOver = (feature, el, dim, key) => {
+            if (!self.geo.json_value || !self.geo.json_value.get(dim) || !self.ableToGetData) {
+               return;
+            }
+
+            // already selected feature
+            if (self.geo.json_curr.get(dim) !== feature) {
+               // update info on mousemove
+               self.geo.json_curr.set(dim, feature);
+               self.updateInfo();
+            }
+
+            let style = getLayerColor(feature, dim, key);
+            style.weight = 4.0;
+            style.opacity = 1.0;
+
+            el.target.setStyle(style);
+
+            return style;
+         };
+
+         let layerOnMouseOut = (feature, el, dim, key) => {
+            if (!self.geo.json_value || !self.geo.json_value.get(dim) || !self.ableToGetData) {
+               return;
+            }
+
+            let style = getLayerColor(feature, dim, key);
+            el.target.setStyle(style);
+
+            return style;
+         };
+
+         let layerOnMouseClick = (feature, el, dim, key) => {
+            if (!self.geo.json_value || !self.geo.json_value.get(dim)) {
+               return;
+            }
+            this.notRefreshTreemapGraphs = [];
+
+            // swith selected
+            if (self.geo.json_selected.get(dim).get(feature)) {
+               self.geo.json_selected.get(dim).set(feature, false);
+               self.removeLabel(feature);
+            }
+            else {
+               self.geo.json_selected.get(dim).set(feature, true);
+               self.addLabel(feature);
+            }
+
+            let style = getLayerColor(feature, dim, key);
+            style.weight = 4.0;
+
+            el.target.setStyle(style);
+            self.loadWidgetsData();
+
+            return style;
+         };
+
+         self.updateAggr();
+
+         self.health.visible = true;
+         self.population.visible = false;
+         self.density.visible = false;
+         self.loadLegend(self.getCurrRegion());
+
+         let getLayerByKey = (key) => {
+            if (key == 'curr' || key == 'curr_pop' || key == "curr_den") {
+               return self.getCurrRegion();
+            }
+            else {
+               return self.getPrevRegion();
+            }
+         };
+
+         let getLayer = (key) => {
+            return L.geoJSON(this.geo.json.get(getLayerByKey(key)), {
+               keepBuffer: 2,
+               updateInterval: 40,
+               updateWhenIdle: true,
+               updateWhenZooming: false,
+
+               style: (feature) => {
+                  if (key == 'prev' || key == "prev_pop" || key == "prev_den") {
+                     return { fillColor: 'rgba(0,0,0,0)', color: 'black', weight: 2.0, opacity: 1.0, fillOpacity: 0.0 };
+                  }
+                  else {
+                     return getLayerColor(feature, self.getCurrRegion(), key);
+                  }
+               },
+               onEachFeature: (feature, layer) => {
+                  if (key == 'curr' || key == 'curr_pop' || key == "curr_den") {
+                     layer.on({
+                        mouseover: (el) => layerOnMouseOver(feature, el, self.getCurrRegion(), key),
+                        mouseout: (el) => layerOnMouseOut(feature, el, self.getCurrRegion(), key),
+                        click: (el) => layerOnMouseClick(feature, el, self.getCurrRegion(), key)
+                     });
+                  }
+               }
+            });
+         };
+
+         if (this.BottomRegionLayer) this.mapService.map.removeLayer(this.BottomRegionLayer);
+         if (this.TopRegionLayer) this.mapService.map.removeLayer(this.TopRegionLayer);
+         if (this.BottomPopRegionLayer) this.mapService.map.removeLayer(this.BottomPopRegionLayer);
+         if (this.TopPopRegionLayer) this.mapService.map.removeLayer(this.TopPopRegionLayer);
+         if (this.BottomDenRegionLayer) this.mapService.map.removeLayer(this.BottomDenRegionLayer);
+         if (this.TopDenRegionLayer) this.mapService.map.removeLayer(this.TopDenRegionLayer);
+
+         this.BottomRegionLayer = getLayer('prev');
+         this.TopRegionLayer = getLayer('curr');
+         this.TopRegionLayer.on('add', this.onRegionAdd, this);
+         this.TopRegionLayer.on('remove', this.onRegionRemove, this);
+
+         let agiradom = L.layerGroup([this.BottomRegionLayer, this.MiddleRegionLayer, this.TopRegionLayer], {
+            zIndex: 1000
+         }).addTo(this.mapService.map);
+
+         this.BottomPopRegionLayer = getLayer('prev_pop');
+         this.TopPopRegionLayer = getLayer('curr_pop');
+         this.TopPopRegionLayer.on('add', this.onRegionPopAdd, this);
+         this.TopPopRegionLayer.on('remove', this.onRegionPopRemove, this);
+
+         let map_population = L.layerGroup([this.BottomPopRegionLayer, this.MiddleRegionLayer, this.TopPopRegionLayer], {
+            zIndex: 1000
+         });
+
+         this.BottomDenRegionLayer = getLayer('prev_den');
+         this.TopDenRegionLayer = getLayer('curr_den');
+         this.TopDenRegionLayer.on('add', this.onRegionDenAdd, this);
+         this.TopDenRegionLayer.on('remove', this.onRegionDenRemove, this);
+
+         let map_density = L.layerGroup([this.BottomDenRegionLayer, this.MiddleRegionLayer, this.TopDenRegionLayer], {
+            zIndex: 1000
+         });
+
+         let overlay_maps = {
+            "Atendimentos": agiradom,
+            "População": map_population,
+            "Densidade": map_density
+         };
+
+         if (this.layersControl) this.layersControl.remove(this.mapService.map);
+         this.layersControl = L.control.layers(overlay_maps, null, {
+            collapsed: false,
+            hideSingleBase: true,
+            position: 'topleft',
+            autoZIndex: false
+         }).addTo(this.mapService.map);
+
+         this.mapService.map.on('move', this.onMapMoveStart, this);
+         this.mapService.map.on('moveend', this.onMapMoveEnd, this);
+         this.mapService.map.on('zoomend', this.onMapZoomEnd, this);
+      });
+
+
+      self.mapService.map.on('baselayerchange', function() {
+         self.mapService.map.eachLayer(function (layer) {
+            if(typeof layer.feature !== 'undefined'){
+               if(self.geo.json_selected.get(self.getCurrRegion()).get(layer.feature)){
+                  layer.fireEvent('mouseover');
+                  layer.fireEvent('mouseout');
+               }
+            }
+         });
+      });
+
+   }
+
+
+   getCountMaxPop() {
+      let features = this.geo.json.get(this.getCurrRegion()).features;
+
+      if (!features || features.length === 0) {
+         return 0;
+      }
+      let values = 0;
+
+      features.forEach((value, key, map) => {
+         if (value) {
+            values += this.population_code(value);
+         }
+      });
+
+      return values;
+   }
+   loadMapCard() {
+      this.currentZoom = this.mapService.map.getZoom();
+      this.maximumZoom = this.mapService.map.getMaxZoom();
+      this.maximumPop = this.getCountMaxPop();
+   }
+
+   setMapRegion(event) {
+      this.currRegion = event;
+      this.setMapData();
+   }
+
+   clearConstrains() {
+      this.project_hash_value = "";
+      this.temporal = {};
+      this.bar_categorical = {};
+      this.treemap_categorical = {};
+      this.notRefreshTreemapGraphs = [];
+      for (const dim of this.schemaService.getGlobal()["regionCategoricalDimension"]) {
+         this.geo.json_selected.set(dim, new Map());
+      }
+      for (const ref of this.widgets) {
+         if (ref.type === 'bar_categorical') {
+            (<BarChartComponent>ref.widget).clearSelectedElts();
+         }
+         else if (ref.type === 'treemap_categorical') {
+            (<TreemapChartComponent>ref.widget).clearSelectedElts();
+         }
+      }
+      this.bar_categorical_restrictions[this.dataset.datasetName].forEach((entry) => {
+         entry.filter = '-';
+      });
+      this.setAggr();
+      d3.select('#filters').selectAll("*").remove();
+      this.radioGroupValue = 0;
+      this.setMapRegion(this.radioGroupValue);
+   }
+
+   getBarCategoricalConst(filter?: string) {
+      let constrainsts = '';
+      for (const key of Object.keys(this.bar_categorical)) {
+         if (filter && key === filter) {
+            continue;
+         }
+         else {
+            constrainsts += this.bar_categorical[key];
+         }
+      }
+
+      if (filter !== undefined) {
+         constrainsts += '/const=' + filter + '.values.(all)';
+      }
+      return constrainsts;
+   }
+
+   getTreemapCategoricalConst(filter?: string) {
+      let constrainsts = '';
+      for (const key of Object.keys(this.treemap_categorical)) {
+         if (filter && key === filter) {
+            continue;
+         }
+         else {
+            constrainsts += this.treemap_categorical[key];
+         }
+      }
+
+      if (filter !== undefined) {
+         constrainsts += '/const=' + filter + '.values.(all)';
+      }
+      return constrainsts;
+   }
+
+   getTemporalConst() {
+      let constrainsts = '';
+      for (const key of Object.keys(this.temporal)) {
+         constrainsts += this.temporal[key];
+      }
+
+      return constrainsts;
+   }
+   setTemporalData = (dim: string, interval: Array<string>) => {
+
+      const values = '/const=' + dim + '.interval.(' + interval[0] + ':' + interval[1] + ')';
+      this.temporal[dim] = values;
+
+      this.loadWidgetsData();
+      this.setMapData();
+   }
+
+   setRegionData = (latlng: any, zoom: number): void => {
+   }
+
+   updateProjectHashValue() {
+      let regional: DimConstraints = {};
+      for (const dim of this.schemaService.getGlobal()["regionCategoricalDimension"]) {
+         let selected = this.geo.json_selected.get(dim);
+
+         if (!selected || selected.size === 0) {
+            continue;
+         }
+         let valid = false;
+         let values = '/const=' + dim + '.values.(';
+
+         selected.forEach((value, key, map) => {
+            if (value) {
+               let r_code_2 = String(this.region_code(key));
+               let value_one_selected = this.geo.json_value.get(this.getCurrRegion()).get(r_code_2.toUpperCase());
+               if (value_one_selected != undefined) {
+                  valid = true;
+                  values += + value_one_selected[0] + ':';
+               }
+            }
+         });
+
+         values = values.substr(0, values.length - 1);
+         values += ')';
+
+         regional[dim] = valid ? values : '';
+      }
+
+      const data = Object.assign({}, this.temporal, this.bar_categorical, this.treemap_categorical);
+
+      this.project_hash_value = this.encrDecrService.set(this.key_encr, JSON.stringify(data));
+   }
+
+   loadWidgetsData() {
+      this.updateInfo();
+      this.updateProjectHashValue();
+
+      let color = 'normal';
+
+      for (const ref of this.widgets) {
+         if (ref.type === 'bar_categorical') {
+            ref.widget.setFormatter(this.getFormatter());
+
+            this.bar_categorical_restrictions[this.dataset.datasetName].forEach((entry) => {
+               if (entry.dimName == (<BarChartComponent>ref.widget).getDim()) {
+                  (<BarChartComponent>ref.widget).setHaveMinSlider(true);
+                  if (entry.minValue === 0) {
+                     (<BarChartComponent>ref.widget).setMinValue(entry.minValue);
+                  }
+                  else {
+                     (<BarChartComponent>ref.widget).setMinValue(Math.pow(10, entry.minValue));
+                  }
+                  if (entry.maxValue === 0) {
+                     (<BarChartComponent>ref.widget).setMaxValue(entry.maxValue);
+                  }
+                  else {
+                     (<BarChartComponent>ref.widget).setMaxValue(Math.pow(10, entry.maxValue));
+                  }
+               }
+            });
+
+            const constrainsts = this.getBarCategoricalConst(ref.key) + this.getTreemapCategoricalConst() +
+               this.getTemporalConst() +
+               this.getRegionConst();
+            ref.widget.setNextTerm(
+               '/query/dataset=' + this.dataset.datasetName +
+               this.getAggr() +
+               constrainsts +
+               '/group=' + ref.key
+            );
+         }
+         else if (ref.type === 'treemap_categorical') {
+            let temp = this.notRefreshTreemapGraphs.find(function(element){ return element==ref.key;});
+            if(typeof temp === 'undefined'){
+               ref.widget.setFormatter(this.getFormatter());
+
+               const constrainsts = this.getBarCategoricalConst() + this.getTreemapCategoricalConst(ref.key) +
+                  this.getTemporalConst() +
+                  this.getRegionConst();
+
+               ref.widget.setNextTerm(
+                  '/query/dataset=' + this.dataset.datasetName +
+                  this.getAggr() +
+                  constrainsts +
+                  '/group=' + ref.key
+               );
+            }
+         }
+         else if (ref.type === 'temporal') {
+            ref.widget.setFormatter(this.getFormatter());
+
+            const constrainsts = this.getBarCategoricalConst(ref.key) + this.getTreemapCategoricalConst(ref.key) +
+               this.getTemporalConst() +
+               this.getRegionConst();
+
+            ref.widget.setNextTerm(
+               '/query/dataset=' + this.dataset.datasetName +
+               this.getAggr() +
+               constrainsts +
+               '/group=' + ref.key
+            );
+         }
+      }
+      this.mapService.map.invalidateSize();
+   }
+
+   setBarCategoricalData = (dim: string, selected: Array<string>) => {
+      this.notRefreshTreemapGraphs = [];
+      if (selected.length === 0) {
+         this.bar_categorical[dim] = '';
+
+         this.bar_categorical_restrictions[this.dataset.datasetName].forEach((entry) => {
+            if (entry.dimName == dim) {
+               entry.filter = '-';
+            }
+         });
+      }
+      else {
+         let values = '/const=' + dim + '.values.(';
+         let valuesFilter = '';
+         for (const elt of selected) {
+            values += elt + ':';
+            valuesFilter += this.dataset.aliases[dim][elt] + ','
+         }
+         values = values.substr(0, values.length - 1);
+         values += ')';
+         valuesFilter = valuesFilter.substr(0, valuesFilter.length - 1);
+
+         this.bar_categorical[dim] = values;
+
+         this.bar_categorical_restrictions[this.dataset.datasetName].forEach((entry) => {
+            if (entry.dimName == dim) {
+               entry.filter = valuesFilter;
+            }
+         });
+      }
+
+      this.loadWidgetsData();
+      this.setMapData();
+   };
+
+   setCountBarCategoricalData = (dim: string, count: any) => {
+      this.bar_categorical_restrictions[this.dataset.datasetName].forEach((entry) => {
+         if (entry.dimName == dim) {
+            entry.count = count;
+         }
+      });
+   };
+
+   setMaxCountBarCategoricalData = (dim: string, maxCount: any) => {
+      this.bar_categorical_restrictions[this.dataset.datasetName].forEach((entry) => {
+         if (entry.dimName == dim) {
+            entry.maxCount = maxCount;
+         }
+      });
+   };
+
+
+   setTreemapCategoricalData = (dim: string, selected: Array<string>) => {
+      this.notRefreshTreemapGraphs = [];
+      let temp = this.notRefreshTreemapGraphs.find(function(element){ return element==dim;});
+      if(typeof temp === 'undefined') this.notRefreshTreemapGraphs.push(dim);
+      if (selected.length === 0) {
+         this.treemap_categorical[dim] = '';
+      }
+      else {
+         let values = '/const=' + dim + '.values.(';
+         for (const elt of selected) {
+            values += elt + ':';
+         }
+         values = values.substr(0, values.length - 1);
+         values += ')';
+
+         this.treemap_categorical[dim] = values;
+      }
+
+      this.loadWidgetsData();
+      this.setMapData();
+   };
+
+
+
+   initialize() {
+      this.options = this.formBuilder.group({
+         // visualization setup
+         aggr: new FormControl('count'),
+         color: new FormControl(this.dataset.color),
+         geometry: new FormControl(this.dataset.geometry),
+         geom_size: new FormControl(this.dataset.geometry_size),
+         resolution: new FormControl(this.dataset.resolution),
+
+         payload: new FormControl(this.dataset.payloads[0]),
+         dataset: new FormControl(this.dataset.datasetName)
+      });
+
+      this.updateAggr();
+
+      this.geocodingService.geocode(this.dataset.local)
+         .subscribe(location => {
+            this.mapService.flyTo(location);
+         }, error => console.error(error));
+
+      const viewContainerRef = this.container;
+
+      // clear widgets
+      for (let i = 0; i < this.widgets.length; ++i) {
+         viewContainerRef.remove(i);
+      }
+
+      this.widgets = [];
+      let self = this;
+
+      for (const dim of this.dataset.barCategoricalDimension) {
+         const component = this.componentFactory.resolveComponentFactory(BarChartComponent);
+
+         let text_css = this.getComponentSize(dim);
+         const componentRef = viewContainerRef.createComponent(component);
+         const componentInstance = <BarChartComponent>componentRef.instance;
+
+         text_css.split(" ").forEach(function (item) {
+            self.renderer2.addClass(componentRef.location.nativeElement, item);
+         });
+         self.renderer2.addClass(componentRef.location.nativeElement, 'eh-graph-categorical');
+         self.renderer2.addClass(componentRef.location.nativeElement, 'eh-'+dim);
+         // this.renderer2.setAttribute(componentRef.location.nativeElement, 'dimension',dim);
+
+         if (this.dataset.aliases[dim + "_label"] != undefined) {
+            componentInstance.setXLabel(this.dataset.aliases[dim + "_label"]);
+         }
+         else {
+            componentInstance.setXLabel(dim);
+         }
+         componentInstance.register(dim, this.setBarCategoricalData);
+         componentInstance.registerCount(dim, this.setCountBarCategoricalData);
+         componentInstance.registerMaxCount(dim, this.setMaxCountBarCategoricalData);
+
+         this.bar_categorical_restrictions[this.dataset.datasetName].forEach((entry) => {
+            if (entry.dimName == dim) {
+               componentInstance.setHaveMinSlider(true);
+               if (entry.minValue === 0) {
+                  componentInstance.setMinValue(entry.minValue);
+               }
+               else {
+                  componentInstance.setMinValue(Math.pow(10, entry.minValue));
+               }
+               if (entry.maxValue === 0) {
+                  componentInstance.setMaxValue(entry.maxValue);
+               }
+               else {
+                  componentInstance.setMaxValue(Math.pow(10, entry.maxValue));
+               }
+            }
+         });
+
+         this.widgets.push({ key: dim, type: 'bar_categorical', widget: componentInstance });
+      }
+
+      for (const dim of this.dataset.treemapCategoricalDimension) {
+         const component = this.componentFactory.resolveComponentFactory(TreemapChartComponent);
+
+         let text_css = this.getComponentSize(dim);
+         const componentRef = viewContainerRef.createComponent(component);
+         const componentInstance = <TreemapChartComponent>componentRef.instance;
+
+         text_css.split(" ").forEach(function (item) {
+            self.renderer2.addClass(componentRef.location.nativeElement, item);
+         });
+         self.renderer2.addClass(componentRef.location.nativeElement, 'eh-graph-treemap');
+         // this.renderer2.setAttribute(componentRef.location.nativeElement, 'dimension',dim);
+
+         componentInstance.setXLabel(dim);
+         componentInstance.register(dim, this.setTreemapCategoricalData);
+
+         this.widgets.push({ key: dim, type: 'treemap_categorical', widget: componentInstance });
+      }
+      for (const dim of Object.keys(this.dataset.temporalDimension)) {
+         const component = this.componentFactory.resolveComponentFactory(LineChartComponent);
+
+         let text_css = this.getComponentSize(dim);
+         const componentRef = viewContainerRef.createComponent(component);
+         const componentInstance = <LineChartComponent>componentRef.instance;
+
+         text_css.split(" ").forEach(function (item) {
+            self.renderer2.addClass(componentRef.location.nativeElement, item);
+         });
+         // this.renderer2.setAttribute(componentRef.location.nativeElement, 'dimension',dim);
+         self.renderer2.addClass(componentRef.location.nativeElement, 'eh-graph-temporal');
+
+         const lower = this.dataset.temporalDimension[dim].lower;
+         const upper = this.dataset.temporalDimension[dim].upper;
+         this.temporal[dim] = '/const=' + dim + '.interval.(' + lower + ':' + upper + ')';
+
+         if (this.dataset.aliases[dim + "_label"] != undefined) {
+            componentInstance.setXLabel(this.dataset.aliases[dim + "_label"]);
+         }
+         else {
+            componentInstance.setXLabel(dim);
+         }
+         componentInstance.register(dim, this.setTemporalData);
+         this.widgets.push({ key: dim, type: 'temporal', widget: componentInstance });
+      }
+
+      // load map
+      this.loadWorldLayer();
+      this.loadLayer();
+      this.loadMapCard();
+
+      // refresh input data
+      this.loadWidgetsData();
+
+      this.clearConstrains();
+
+      const nameCSV = this.schemaService.getGlobal()["equipe"]["nameCSV"];
+      const key1 = this.schemaService.getGlobal()["equipe"]["key1"];
+      const key2 = this.schemaService.getGlobal()["equipe"]["key2"];
+      this.http.get('./assets/csv/' + nameCSV).subscribe(
+         data => {
+            this.ibge2Equipe = this.csvToMap(data['_body'], key1, key2);
+         },
+         error => {
+            console.log(error);
+         }
+      );
+   }
+
+   // isDataAvailable:boolean = false;
+
+
+   setMapData() {
+      let promises = this.getMapPromises();
+
+      Promise.all(promises).then(() => {
+         this.loadLegend(this.getCurrRegion());
+         this.loadPopLegend(this.getCurrRegion());
+         this.loadDenLegend(this.getCurrRegion());
+
+         let prev_data = this.geo.json.get(this.getPrevRegion());
+         let curr_data = this.geo.json.get(this.getCurrRegion());
+
+         this.BottomRegionLayer.clearLayers();
+         this.BottomRegionLayer.addData(prev_data);
+         this.TopRegionLayer.clearLayers();
+         this.TopRegionLayer.addData(curr_data);
+         this.BottomPopRegionLayer.clearLayers();
+         this.BottomPopRegionLayer.addData(prev_data);
+         this.TopPopRegionLayer.clearLayers();
+         this.TopPopRegionLayer.addData(curr_data);
+         this.BottomDenRegionLayer.clearLayers();
+         this.BottomDenRegionLayer.addData(prev_data);
+         this.TopDenRegionLayer.clearLayers();
+         this.TopDenRegionLayer.addData(curr_data);
+      });
+   }
+
+   getAggr() {
+      return this.aggr;
+   }
+
+
+   updateInfoName() {
+      let feature = this.getCurrentFeature();
+      if (feature) {
+         this.info_name = this.region_name(feature);
+      }
+      else {
+         this.info_name = this.schemaService.getGlobal()['worldLabel'];
+      }
+   }
+   updateInfoData() {
+      let query = '/query/dataset=' + this.dataset.datasetName + '/aggr=count' +
+         this.getBarCategoricalConst() +
+         this.getTreemapCategoricalConst() +
+         this.getTemporalConst() +
+         this.getRegionConst(this.getCurrentFeature());
+      // let query = updateQueryData();
+      this.dataService.query(query).subscribe(data => {
+         this.info_events[0] = data[0];
+         if (this.getCurrentFeature()) {
+            let r_code = String(this.region_code(this.getCurrentFeature()));
+            let value_region = this.geo.json_value.get(this.getCurrRegion()).get(r_code.toUpperCase());
+            if (value_region == undefined) {
+               this.info_events[0] = 0;
+            }
+         }
+         this.info_pop[0] = this.getCountPop(this.getCurrentFeature());
+         this.info_den[0] = this.info_events[0] / this.info_pop[0];
+      });
+
+      query = '/query/dataset=' + this.dataset.datasetName + '/aggr=count' +
+         this.getRegionConst();
 
       this.dataService.query(query).subscribe(data => {
-        if (data[0] === undefined) {
-          return tile;
-        }
-
-        for (const d of data[0]) {
-          if (d[2] < coords.z + this.options.get('resolution').value) {
-            d[0] = Mercator.lon2tilex(Mercator.tilex2lon(d[0] + 0.5, d[2]), coords.z + this.options.get('resolution').value);
-            d[1] = Mercator.lat2tiley(Mercator.tiley2lat(d[1] + 0.5, d[2]), coords.z + this.options.get('resolution').value);
-            d[2] = coords.z + this.options.get('resolution').value;
-          }
-
-          const lon0 = Mercator.tilex2lon(d[0], d[2]);
-          const lat0 = Mercator.tiley2lat(d[1], d[2]);
-          const lon1 = Mercator.tilex2lon(d[0] + 1, d[2]);
-          const lat1 = Mercator.tiley2lat(d[1] + 1, d[2]);
-
-          const x0 = (Mercator.lon2tilex(lon0, coords.z) - coords.x) * 256;
-          const y0 = (Mercator.lat2tiley(lat0, coords.z) - coords.y) * 256;
-          const x1 = (Mercator.lon2tilex(lon1, coords.z) - coords.x) * 256;
-          const y1 = (Mercator.lat2tiley(lat1, coords.z) - coords.y) * 256;
-
-          const config = () => {
-            const drawfuncs = {
-              circle: (geom_size) => {
-                const radius = ((x1 - x0) / 2) + geom_size;
-                ctx.beginPath();
-                ctx.arc((x0 + x1) / 2, (y0 + y1) / 2, radius, 0, 2 * Math.PI);
-                ctx.fill();
-              },
-              rect: (geom_size) => {
-                ctx.fillRect(x0 - geom_size, y0 - geom_size, (x1 - x0) + geom_size, (y1 - y0) + geom_size);
-              }
-            };
-
-            return {
-              draw: drawfuncs[this.options.get('geometry').value],
-              color: this.color
-            };
-          };
-
-          ctx.fillStyle = config().color(d[3]);
-          config().draw(this.options.get('geom_size').value);
-        }
-
-        done(null, tile);
+         this.info_events[1] = data[0];
+         this.info_pop[1] = this.getCountPop();
+         this.info_den[1] = this.info_events[1] / this.info_pop[1];
       });
+   }
+   updateInfo() {
+      this.updateInfoName();
+      this.updateInfoData();
+   }
 
-      return tile;
-    };
 
-    this.mapService.map.addLayer(this.CanvasLayer);
-    this.mapService.map.on('zoomend', this.onMapZoomEnd, this);
-  }
+   getCurrRegion() {
+      return this.schemaService.getGlobal()["regionCategoricalDimension"][this.currRegion];
+   }
+   loadWorldLayer() {
+      let self = this;
 
-  onMapZoomEnd() {
-    this.currentZoom = Math.round(this.mapService.map.getZoom());
-  }
+      let layerOnMouseOver = (feature, el, dim) => {
+         if (self.geo.json_curr.get(self.getCurrRegion()) !== undefined) {
+            self.geo.json_curr.set(self.getCurrRegion(), undefined);
+            self.updateInfo();
+         }
+      };
 
-  loadWidgetsData() {
-    for (const ref of this.widgets) {
-      if (ref.type === 'categorical') {
-        ref.widget.setYLabel(this.aggr_map[this.options.get('aggr').value].label);
-        ref.widget.setFormatter(this.aggr_map[this.options.get('aggr').value].formatter);
-        ref.widget.setNextTerm(
-          '/query/dataset=' + this.dataset.datasetName +
-          this.getAggr() +
-          this.getCategoricalConst(ref.key) +
-          this.getTemporalConst() +
-          this.getRegionConst() +
-          '/group=' + ref.key
-        );
-      } else if (ref.type === 'temporal') {
-        ref.widget.setYLabel(this.aggr_map[this.options.get('aggr').value].label);
-        ref.widget.setFormatter(this.aggr_map[this.options.get('aggr').value].formatter);
-        (<TemporalBandComponent>ref.widget).setNumCurves(this.getAggrTemporalBands());
+      let getLayer = (dim) => {
+         return L.geoJSON(this.geo.json.get(dim), {
+            style: function (feature) {
+               return { fillColor: 'black', color: 'black', weight: 0.0, opacity: 0.0, fillOpacity: 0.0 };
+            },
+            onEachFeature: (feature, layer) => {
+               layer.on({
+                  mouseover: (el) => layerOnMouseOver(feature, el, dim)
+               });
+            }
+         });
+      };
 
-        ref.widget.setNextTerm(
-          '/query/dataset=' + this.dataset.datasetName +
-          this.getAggrTemporalBand() +
-          this.getCategoricalConst() +
-          this.getTemporalConst() +
-          this.getRegionConst() +
-          '/group=' + ref.key
-        );
+      if (this.MiddleRegionLayer) this.mapService.map.removeLayer(this.MiddleRegionLayer);
+      this.MiddleRegionLayer = getLayer(this.schemaService.getGlobal()['worldRegion']);
+   }
+
+
+   loadPopLegend(dim) {
+      const svg = d3.select('#svg-color-pop-quant');
+      svg.selectAll('*').remove();
+
+      if (!this.population.visible || this.geo.json_min_max_pop.get(dim)[0] == Number.MAX_SAFE_INTEGER)
+         return;
+
+      svg.append('g')
+         .attr('class', 'legendPopQuant')
+         .attr('transform', 'translate(0, 0)');
+
+      let scaleColor = this.color_map["normal_pop"](dim);
+
+      const colorLegend = legendColor()
+         .ascending(true)
+         .labelFormat(this.getFormatter())
+         .scale(scaleColor);
+
+      svg.select('.legendPopQuant')
+         .call(colorLegend);
+   }
+   loadDenLegend(dim) {
+      const svg = d3.select('#svg-color-den-quant');
+      svg.selectAll('*').remove();
+
+      if (!this.density.visible || this.geo.json_min_max_den.get(dim)[0] == Number.MAX_SAFE_INTEGER)
+         return;
+
+      svg.append('g')
+         .attr('class', 'legendDenQuant')
+         .attr('transform', 'translate(0, 0)');
+
+      let scaleColor = this.color_map["normal_den"](dim);
+
+      const colorLegend = legendColor()
+         .ascending(true)
+         .labelFormat(d3.format("0.3f"))
+         .scale(scaleColor);
+
+      svg.select('.legendDenQuant')
+         .call(colorLegend);
+   }
+
+   onRegionAdd() {
+      this.health.visible = true;
+      this.loadLegend(this.getCurrRegion());
+   }
+   onRegionRemove() {
+      this.health.visible = false;
+      this.loadLegend(this.getCurrRegion());
+   }
+   onRegionPopAdd() {
+      this.population.visible = true;
+      this.loadPopLegend(this.getCurrRegion());
+   }
+   onRegionPopRemove() {
+      this.population.visible = false;
+      this.loadPopLegend(this.getCurrRegion());
+   }
+   onRegionDenAdd() {
+      this.density.visible = true;
+      this.loadDenLegend(this.getCurrRegion());
+   }
+   onRegionDenRemove() {
+      this.density.visible = false;
+      this.loadDenLegend(this.getCurrRegion());
+   }
+
+   onMapMoveStart() {
+      this.ableToGetData = false;
+   }
+
+   onMapMoveEnd() {
+      this.ableToGetData = true;
+   }
+
+   onMapZoomEnd() {
+      this.currentZoom = Math.round(this.mapService.map.getZoom());
+   }
+   getPrevRegion() {
+      if (this.currRegion == 0) {
+         return this.schemaService.getGlobal()["regionCategoricalDimension"][0];
       }
-    }
+      else {
+         return this.schemaService.getGlobal()["regionCategoricalDimension"][this.currRegion - 1];
+      }
+   }
+   getFormatter() {
+      return this.aggr_map[this.options.get('aggr').value].formatter;
+   }
+   loadLegend(dim) {
+      const svg = d3.select('#svg-color-quant');
+      svg.selectAll('*').remove();
 
-    // update count
-    this.dataService.query('/query/dataset=' + this.dataset.datasetName + '/aggr=count' +
-      this.getCategoricalConst() + this.getTemporalConst() + this.getRegionConst())
-      .subscribe(data => {
-        this.currentCount = data[0];
+      if (!this.health.visible || this.geo.json_min_max.get(dim)[0] == Number.MAX_SAFE_INTEGER)
+         return;
+
+      svg.append('g')
+         .attr('class', 'legendQuant')
+         .attr('transform', 'translate(0, 0)');
+
+      let scaleColor = this.color(dim);
+
+      const colorLegend = legendColor()
+         .ascending(true)
+         .labelFormat(this.getFormatter())
+         .scale(scaleColor);
+
+      svg.select('.legendQuant')
+         .call(colorLegend);
+   }
+
+   median(values) {
+      if (values.length === 0) return undefined;
+      var half = Math.floor(values.length / 2);
+
+      if (values.length % 2)
+         return values[half];
+
+      return (values[half - 1] + values[half]) / 2.0;
+   }
+
+   formatThousandsSeperator(n) {
+      return d3.format(",")(n);
+   }
+   formatDecimal(n) {
+      return d3.format("0.3f")(n);
+   }
+
+
+   openWindow(contentTemplate) {
+      if(this.current_modal!=null) this.current_modal.close();
+      this.current_modal = this.windowService.open(
+         contentTemplate,
+         {
+            title: 'Configuração',
+            context: {
+               text: this.project_hash_value,
+            },
+         },
+      );
+   }
+
+   categoricalConst2Array(categoricalConst) {
+      let numbersStr = categoricalConst.substring(categoricalConst.lastIndexOf("(") + 1,
+         categoricalConst.lastIndexOf(")"));
+      let numbers = numbersStr.split(":").map(Number);
+      return numbers;
+   }
+
+   copyToClipboard(inputElement) {
+      inputElement.select();
+      document.execCommand('copy');
+      inputElement.setSelectionRange(0, 0);
+      this.current_modal.close();
+      this.toastrComponent.makeToast('success', 'Copiado', 'O conteúdo foi copiado com sucesso.');
+   }
+
+   loadProjectHashValue(inputElement) {
+      this.project_hash_value = inputElement.value;
+      let data = undefined;
+      try {
+         data = JSON.parse(this.encrDecrService.get(this.key_encr, this.project_hash_value));
+      }
+      catch (error) {
+         console.log(error);
+         this.current_modal.close();
+         this.toastrComponent.makeToast('danger', 'Erro', 'Erro ao abrir.');
+         this.project_hash_value = "";
+         return;
+      }
+
+      this.temporal = {};
+      this.bar_categorical = {};
+      this.treemap_categorical = {};
+      for (const dim of this.schemaService.getGlobal()["regionCategoricalDimension"]) {
+         this.geo.json_selected.set(dim, new Map());
+      }
+      this.bar_categorical_restrictions[this.dataset.datasetName].forEach((entry) => {
+         entry.filter = '-';
       });
-  }
 
-  setDataset(evnt: any) {
-    this.sidenav.toggle();
-    const link = ['/demo2', this.options.get('dataset').value];
-    this.router.navigate(link);
-  }
+      for (const dim of this.dataset.barCategoricalDimension) {
+         if (data[dim]) {
+            this.bar_categorical[dim] = data[dim];
+         }
+      }
 
-  setMapData() {
-    this.CanvasLayer.redraw();
-  }
+      for (const dim of this.dataset.treemapCategoricalDimension) {
+         if (data[dim]) {
+            this.treemap_categorical[dim] = data[dim];
+         }
+      }
 
-  setAggr() {
-    const type = this.options.get('aggr').value;
+      for (const dim of Object.keys(this.dataset.temporalDimension)) {
+         if (data[dim]) {
+            this.temporal[dim] = data[dim];
+         }
+      }
 
-    if (type === 'count') {
-      this.color = this.color_map['count'];
-    } else {
-      this.color = this.color_map['payload'];
-    }
+      for (const ref of this.widgets) {
+         if (ref.type === 'bar_categorical') {
+            if (this.bar_categorical[ref.key]) {
+               const catArray = this.categoricalConst2Array(this.bar_categorical[ref.key]);
+               (<BarChartComponent>ref.widget).setSelectedElts(catArray);
+               this.bar_categorical_restrictions[this.dataset.datasetName].forEach((entry) => {
+                  if (entry.dimName == ref.key) {
+                     let valuesFilter = '';
+                     for (const elt of catArray) {
+                        valuesFilter += this.dataset.aliases[ref.key][elt] + ','
+                     }
+                     valuesFilter = valuesFilter.substr(0, valuesFilter.length - 1);
+                     entry.filter = valuesFilter;
+                  }
+               });
 
-    this.aggr = '/aggr=' + this.aggr_map[type].key;
+            }
+         }
+         else if (ref.type === 'treemap_categorical') {
+            if (this.treemap_categorical[ref.key]) {
+               (<TreemapChartComponent>ref.widget).setSelectedElts(this.categoricalConst2Array(this.treemap_categorical[ref.key]));
+            }
+         }
+      }
 
-    if (this.aggr_map[type].sufix !== undefined) {
-      this.aggr += '.' + this.options.get('payload').value + this.aggr_map[type].sufix;
-    }
+      this.setAggr();
+      this.current_modal.close();
+   }
 
-    if (type === 'cdf' || type === 'quantile') {
-      this.aggr += '.(' + this.getPayloadInfo('value') + ')';
-    }
+   getRegionConstWDim(dim, idx) {
+      let self = this;
+      let output = "";
 
-    this.loadWidgetsData();
-    this.setMapData();
-    this.loadLegend();
-  }
+      if (self.geo.json_value.get(dim) == undefined) {
+         return output;
+      }
 
-  setCategoricalData = (dim: string, selected: Array<string>) => {
-    if (selected.length === 0) {
-      this.categorical[dim] = '';
-    } else {
+      if (self.geo.json_value.get(dim).size == 0) {
+         return output;
+      }
+
+      let selected = this.geo.json_selected.get(dim);
+
+      if (!selected || selected.size === 0) {
+         return output;
+      }
+
+      let valid = false;
       let values = '/const=' + dim + '.values.(';
-      for (const elt of selected) {
-        values += elt + ':';
-      }
+
+      selected.forEach((value, key, map) => {
+         if (value) {
+            let r_code_2 = String(this.region_code(key, idx));
+            let value_one_selected = self.geo.json_value.get(dim).get(r_code_2.toUpperCase());
+            if (value_one_selected != undefined) {
+               valid = true;
+               values += + value_one_selected[0] + ':';
+            }
+         }
+      });
+
       values = values.substr(0, values.length - 1);
       values += ')';
+      output += valid ? values : '';
 
-      this.categorical[dim] = values;
-    }
+      return output;
+   }
 
-    this.loadWidgetsData();
-    this.setMapData();
-  }
+   csvToMap(csvString, keyName, secondKeyName) {
+      let lines = csvString.split('\n');
+      let headerValues = lines[0].split(';');
+      let dataValues = lines.splice(1).map(function (dataLine) { return dataLine.split(';'); });
+      let mapResult = new Map();
+      dataValues.map(function (rowValues) {
+         let row = {};
+         let key = "";
+         let key2 = "";
+         headerValues.forEach(function (headerValue, index) {
+            if (headerValue == keyName) {
+               key = (index < rowValues.length) ? rowValues[index] : null;
+            }
+            else if (headerValue == secondKeyName) {
+               key2 = (index < rowValues.length) ? rowValues[index] : null;
+            }
+            else {
+               row[headerValue] = (index < rowValues.length) ? rowValues[index] : null;
+            }
+         });
+         if (!mapResult.has(key)) {
+            mapResult.set(key, new Map());
+         }
+         mapResult.get(key).set(key2, row);
+      });
+      return mapResult;
+   }
 
-  setTemporalData = (dim: string, interval: Array<string>) => {
-    const values = '/const=' + dim + '.interval.(' + interval[0] + ':' + interval[1] + ')';
-    this.temporal[dim] = values;
+   showEquipes(): void {
+      const idx = this.schemaService.getGlobal()["regionCategoricalDimension"].length - 1;
+      const dim = this.schemaService.getGlobal()["regionCategoricalDimension"][idx];
+      const mun: MunElement[] = [];
+      const selectedMap = new Map();
+      let selected = this.geo.json_selected.get(dim);
+      selected.forEach((value, key, map) => {
+         if (value) {
+            let r_code_2 = String(this.region_code(key, idx));
+            selectedMap.set(r_code_2, key);
+         }
+      });
 
-    this.loadWidgetsData();
-    this.setMapData();
-  }
+      let query = '/query/dataset=' + this.dataset.datasetName + '/aggr=count' +
+         this.getBarCategoricalConst() +
+         this.getTreemapCategoricalConst() +
+         this.getTemporalConst() +
+         this.getRegionConstWDim(dim, idx) + "/group=" + dim;
 
-  setRegionData = (latlng: any, zoom: number): void => {
-    if (latlng.getNorthEast().lat === latlng.getSouthWest().lat && latlng.getSouthWest().lng === latlng.getNorthEast().lng) {
-      this.region[this.dataset.spatialDimension[0]] = '';
-      this.currentCount = this.maximumCount;
-    } else {
-      const z = zoom + 8;
-      const region = this.mapService.get_coords_bounds(latlng, z);
+      this.dataService.query(query).subscribe(data => {
+         for (let i = 0; i <  data[0].length; i++) {
+            const ibge_code = this.dataset.aliases[dim][data[0][i][0]];
+            const key = selectedMap.get(ibge_code);
+            const atend = data[0][i][1];
+            const pop = this.population_code(key, idx);
+            const den = atend / pop;
+            mun.push({cod_qds: data[0][i][0], cod_ibge: ibge_code, name: this.region_name(key, idx), atend: atend, pop: pop, den: den});
+         }
 
-      this.region[this.dataset.spatialDimension[0]] = '/const=' + this.dataset.spatialDimension[0] +
-        '.region.(' + region.x0 + ':' + region.y0 + ':' + region.x1 + ':' + region.y1 + ':' + z + ')';
-    }
+         this.dialogService.open(DialogEquipesComponent, {
+            context: {
+               title: 'Avaliação de equipes',
+               data: {
+                  datasetName: this.dataset.datasetName,
+                  dim: dim,
+                  consts: this.getBarCategoricalConst() + this.getTreemapCategoricalConst() + this.getTemporalConst(),
+                  ibge2Equipe: this.ibge2Equipe,
+                  data: mun
+               }
+            },
+         }
+         );
 
-    this.loadWidgetsData();
-  }
+         /*const dialogRef = this.dialog.open(DialogEquipes, {
+            width: '100%',
+            maxWidth: '100%',
+            data: {
+               datasetName: this.dataset.datasetName,
+               dim: dim,
+               consts: this.getBarCategoricalConst() + this.getTreemapCategoricalConst() + this.getTemporalConst(),
+               ibge2Equipe: this.ibge2Equipe,
+               data: new MatTableDataSource<MunElement>(mun)
+            }
+         });*/
+      });
+   }
 
-  getAggrTemporalBands() {
-    const type = this.options.get('aggr').value;
-
-    if (type === 'count') {
-      return 1;
-    } else {
-      const values = this.bandQuantiles.split(':');
-      return values.length;
-    }
-  }
-
-  setAggrTemporalBand() {
-    this.loadWidgetsData();
-  }
-
-  getAggrTemporalBand(): string {
-    if (this.options.get('aggr').value === 'count') {
-      return this.getAggr();
-    }
-
-    const type = 'quantile';
-    const payload = this.options.get('payload').value;
-
-    let aggr = '/aggr=' + this.aggr_map[type].key;
-
-    aggr += '.' + payload + this.aggr_map[type].sufix;
-
-    aggr += '.(' + this.bandQuantiles + ')';
-    return aggr;
-  }
-
-  getAggr() {
-    return this.aggr;
-  }
-
-  getCategoricalConst(filter?: string) {
-    let constrainsts = '';
-    for (const key of Object.keys(this.categorical)) {
-      if (filter && key === filter) {
-        continue;
-      } else {
-        constrainsts += this.categorical[key];
+   preInitialize() {
+      this.project_hash_value = "";
+      this.temporal = {};
+      this.bar_categorical = {};
+      this.treemap_categorical = {};
+      for (const dim of this.schemaService.getGlobal()["regionCategoricalDimension"]) {
+         this.geo.json_selected.set(dim, new Map());
       }
-    }
+      for (const ref of this.widgets) {
+         if (ref.type === 'bar_categorical') {
+            (<BarChartComponent>ref.widget).clearSelectedElts();
+         }
+         else if (ref.type === 'treemap_categorical') {
+            (<TreemapChartComponent>ref.widget).clearSelectedElts();
+         }
+      }
+      this.bar_categorical_restrictions[this.dataset.datasetName].forEach((entry) => {
+         entry.filter = '-';
+      });
+      this.geo.json_curr = new Map();
+      this.geo.json_value = new Map();
+   }
 
-    if (filter !== undefined) {
-      constrainsts += '/const=' + filter + '.values.(all)';
-    }
-    return constrainsts;
-  }
+   ngOnInit(): void {
+      d3.formatDefaultLocale({
+         "decimal": ",",
+         "thousands": ".",
+         "grouping": [3],
+         "currency": ["R$", ""]
+      });
+      this.mapService.load_CRSEPSG3857();
 
-  getTemporalConst() {
-    let constrainsts = '';
-    for (const key of Object.keys(this.temporal)) {
-      constrainsts += this.temporal[key];
-    }
+      L.control.zoom({
+         position:'bottomright'
+      }).addTo(this.mapService.map);
 
-    return constrainsts;
-  }
+      this.activatedRoute.params.subscribe(params => {
+         const param = params['dataset'];
+         if (param !== undefined) {
+            if (this.dataset) {
+               this.preInitialize();
+            }
+            this.dataset = this.schemaService.get(param);
+            this.initialize();
+         }
+         else {
+            const link = ['/demo3', this.configService.defaultDataset];
+            this.router.navigate(link);
+         }
+      });
+   }
 
-  getRegionConst() {
-    let constrainsts = '';
-    for (const key of Object.keys(this.region)) {
-      constrainsts += this.region[key];
-    }
-    return constrainsts;
-  }
+   ngAfterViewInit() {
+      this.marker = new Marker(this.mapService);
+      this.marker.register(this.setRegionData);
 
-  ngOnInit() {
-    this.mapService.load_CRSEPSG3857();
+      this.mapService.disableEvent(this.mapwidgets);
 
-    this.dataset = this.schemaService.get(this.dataset_values[0].value);
+      this.loadWidgetsData();
+   }
 
-    this.initialize();
-  }
-
-  ngAfterViewInit() {
-    this.marker = new Marker(this.mapService);
-    this.marker.register(this.setRegionData);
-
-    this.mapService.disableEvent(this.mapwidgets);
-
-    // load visualizations
-    this.loadLayer();
-  }
-
-  initialize() {
-    this.options = this.formBuilder.group({
-      // visualization setup
-      geometry: new FormControl(this.dataset.geometry),
-      geom_size: new FormControl(this.dataset.geometry_size),
-      resolution: new FormControl(this.dataset.resolution),
-      composition: new FormControl(this.dataset.composition),
-
-      aggr: new FormControl('count'),
-      payload: new FormControl(this.dataset.payloads[0]),
-
-      dataset: new FormControl(this.dataset.datasetName)
-    });
-
-    this.color = this.color_map['count'];
-    this.aggr = '/aggr=count';
-
-    this.geocodingService.geocode(this.dataset.local)
-      .subscribe(location => {
-        this.mapService.flyTo(location);
-      }, error => console.error(error));
-
-    const viewContainerRef = this.container;
-
-    // clear widgets
-    for (let i = 0; i < this.widgets.length; ++i) {
-      viewContainerRef.remove(i);
-    }
-
-    this.widgets = [];
-
-    for (const dim of Object.keys(this.dataset.temporalDimension)) {
-      const component = this.componentFactory.resolveComponentFactory(TemporalBandComponent);
-
-      const componentRef = viewContainerRef.createComponent(component);
-      const componentInstance = <TemporalBandComponent>componentRef.instance;
-
-      this.renderer2.addClass(componentRef.location.nativeElement, 'app-footer-item');
-
-      const lower = this.dataset.temporalDimension[dim].lower;
-      const upper = this.dataset.temporalDimension[dim].upper;
-      this.temporal[dim] = '/const=' + dim + '.interval.(' + lower + ':' + upper + ')';
-
-      componentInstance.setXLabel(dim);
-      componentInstance.register(dim, this.setTemporalData);
-      this.widgets.push({ key: dim, type: 'temporal', widget: componentInstance });
-    }
-
-    // refresh input data
-    this.loadWidgetsData();
-    this.loadMapCard();
-  }
-
-  getPayloadInfo(key: string, payload?, type?) {
-    if (payload === undefined) {
-      payload = this.options.get('payload').value;
-    }
-
-    if (type === undefined) {
-      type = this.options.get('aggr').value;
-    }
-
-    return d3.format('.2f')(this.dataset.payloadValues[payload][type][key]);
-  }
-
-  setPayloadInfo(key: string, value: number) {
-    this.dataset.payloadValues[this.options.get('payload').value][this.options.get('aggr').value][key] = value;
-
-    this.setAggr();
-  }
 }

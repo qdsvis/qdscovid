@@ -7,29 +7,29 @@ import { Observable } from 'rxjs/Observable';
 
 @Injectable()
 export class DataService {
-  private actionUrl: string;
-  private headers = new Headers();
+   private actionUrl: string;
+   private headers = new Headers();
 
-  constructor(private http: Http, private config: ConfigurationService) {
-    this.headers.append('Content-Type', 'application/json');
-    this.headers.append('Accept', 'application/json');
-  }
+   constructor(private http: Http, private config: ConfigurationService) {
+      this.headers.append('Content-Type', 'application/json');
+      this.headers.append('Accept', 'application/json');
+   }
 
-  private handleError(error: any): Observable<any> {
-    console.error('An error occurred', error);
-    return Observable.throw(error.json().error || 'Server error');
-  }
+   private handleError(error: any): Observable<any> {
+      console.error('An error occurred', error);
+      return Observable.throw(error.json().error || 'Server error');
+   }
 
 
-  query(action: string): Observable<any> {
-    return this.http
+   query(action: string): Observable<any> {
+      return this.http
       .get(this.config.ServerWithApiUrl + action)
       .map(response => response.json());
-  }
+   }
 
-  schema(action: string): Observable<any> {
-    return this.http
+   schema(action: string): Observable<any> {
+      return this.http
       .get(this.config.ServerWithApiUrl + '/schema' + action)
       .map(response => response.json());
-  }
+   }
 }

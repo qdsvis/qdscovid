@@ -1,109 +1,151 @@
-<mat-sidenav-container class="app-container over-map">
-  <mat-sidenav #sidenav position="end" [mode]="mode.value" opened="false" class="app-sidenav" [formGroup]="options">
+<nb-layout windowMode>
+   <nb-layout-header fixed  id="header">
+      <ngx-header></ngx-header>
+   </nb-layout-header>
 
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Map Settings</mat-card-title>
-      </mat-card-header>
+   <nb-layout-column>
+   <div class="row">
+      <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+         <div id="eh-graphics" class="row force-overflow-hidden height-scroll-graphics eh-graphics eh-graphics2 eh-graphics3 eh-graphics4 eh-graphics5 eh-graphics6" dragula="SORTABLE_COMPONENT">
+            <ng-template #container></ng-template>
+         </div>
+      </div>
+      <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+         <div class="row">
+            <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+               <nb-card size="giant" class="eh-map eh-map2 eh-map3">
+                  <nb-card-header class="nb-tiny-padding">
+                  <div class="row">
+                     <div class="col-10 eh-search-map"><app-navigator></app-navigator></div>
+                     <button nbButton size="tiny" class="col-2 eh-config" status="primary" fullWidth="true" (click)="openWindow(contentTemplate)">Config</button>
+                  </div>
+               </nb-card-header>
+                  <nb-card-body>
+                  <div id="map">
+                     <div #mapwidgets>
+                        <nb-card id="menu">
+                           <svg class="on-map bgd-legend" ></svg>
+                           <svg id="svg-color-quant" class="on-map legend-color-map"></svg>
+                           <svg id="svg-color-pop-quant" class="on-map legend-color-map"></svg>
+                           <svg id="svg-color-den-quant" class="on-map legend-color-map"></svg>
+                        </nb-card>
+                        <nb-card class="map-card on-map" [formGroup]="options">
+                           <div class="height-medium">
+                              <section *ngIf="optionsRegions.ceil !== 0" >
+                                 <span class="nb-badge-custom">Selecionar região:</span>
+                                 <nb-radio-group class="region-radio-group" [(ngModel)]="currRegion" [ngModelOptions]="{standalone: true}" [(value)]="radioGroupValue">
+                                    <nb-radio class="region-radio-button" *ngFor="let region of optionsRegions" [value]="region.value" (valueChange)="setMapRegion($event)">
+                                       {{region.label}}
+                                    </nb-radio>
+                                 </nb-radio-group>
+                              </section>
+                           </div>
+                           <div class="height-small">
+                              <section>
+                                 <span class="nb-badge-custom">Nome:</span>{{ info_name }}
+                              </section>
+                              <section *ngIf="health.visible || density.visible">
+                                 <span class="nb-badge-custom">Atendimentos:</span>{{ formatThousandsSeperator(info_events[0]) }} - {{ formatThousandsSeperator(info_events[1]) }}
+                              </section>
+                              <section *ngIf="population.visible || density.visible">
+                                 <span class="nb-badge-custom">População:</span>{{ formatThousandsSeperator(info_pop[0]) }} - {{ formatThousandsSeperator(info_pop[1]) }}
+                              </section>
+                              <section *ngIf="density.visible">
+                                 <span class="nb-badge-custom">Densidade:</span>{{ formatDecimal(info_den[0]) }} - {{ formatDecimal(info_den[1]) }}
+                              </section>
+                           </div>
+                           <div class="height-small">
+                              <section>
+                                 <span class="nb-badge-custom nb-color-danger">Agregação:</span>
+                                 <nb-card-body class="col-xl-12">
+                                    <div class="form-group">
+                                       <nb-select status="danger" placeholder="tiny" shape="round" fullWidth="true" size="tiny" formControlName="aggr" (selectedChange)="setAggr()">
+                                          <nb-option *ngFor="let opt of aggr_values" [value]="opt.value">
+                                             {{opt.viewValue}}
+                                          </nb-option>
+                                       </nb-select>
+                                    </div>
+                                 </nb-card-body>
+                              </section>
+                           </div>
 
-      <mat-card-content>
-        <section>
-          <span class="badge badge-primary">Geometry:</span>
-          <mat-form-field class="app-section">
-            <mat-select formControlName="geometry" (selectionChange)="setMapData()">
-              <mat-option *ngFor="let opt of geometry_values" [value]="opt.value">
-                {{opt.viewValue}}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-        </section>
-        <section>
-          <span class="badge badge-primary">Global Composition:</span>
-          <mat-form-field class="app-section">
-            <mat-select formControlName="composition" (selectionChange)="setMapData()">
-              <mat-option *ngFor="let opt of composition_values" [value]="opt.value">
-                {{opt.viewValue}}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-        </section>
-        <section>
-          <span class="badge badge-primary">Dataset:</span>
-          <mat-form-field class="app-section">
-            <mat-select formControlName="dataset" (selectionChange)="setDataset($event)">
-              <mat-option *ngFor="let opt of dataset_values" [value]="opt.value">
-                {{opt.viewValue}}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-        </section>
-      </mat-card-content>
+                           <section *ngIf="options.get('aggr').value !== 'count'">
+                              <div class="height-small">
+                                 <span class="nb-badge-custom nb-color-danger">Payload:</span>
+                                 <nb-radio-group class="region-radio-group" formControlName="payload" (change)="setAggr()">
+                                    <nb-radio class="region-radio-button" *ngFor="let opt of dataset.payloads" [value]="opt">
+                                       {{opt}}
+                                    </nb-radio>
+                                 </nb-radio-group>
+                              </div>
+                           </section>
+                           <div class="height-small" *ngFor="let entry of bar_categorical_restrictions[dataset.datasetName]">
+                              <span class="nb-badge-custom nb-color-warning">{{ aggr_map[options.get('aggr').value].label + entry.viewValue }}</span>
+                              <section>
+                                 <span class="nb-badge-custom">Restrições:</span>
+                                 <div class="custom-slider">
+                                    <ng5-slider [(value)]="entry.minValue" [(highValue)]="entry.maxValue" [options]="optionsCategoricalRestrictions"
+                                                (userChangeEnd)="setCategoricalRestrictions($event, entry)"></ng5-slider>
+                                 </div>
+                              </section>
+                              <section>
+                                 <span class="nb-badge-custom">Contagem da barra:</span> {{ entry.count }} of {{ entry.maxCount}}
+                              </section>
+                              <section>
+                                 <span class="nb-badge-custom">Filtro:</span> {{ entry.filter }}
+                              </section>
+                           </div>
+                           <div class="height-small">
+                              <button nbButton id="eh-equipes-button" status="primary" size="tiny" fullWidth="true" (click)="showEquipes()">
+                                 Avaliação de Equipes
+                                 <nb-icon icon="people-outline" size="tiny"></nb-icon>
+                              </button>
+                              <button nbButton id="clear-button" status="danger" size="tiny" fullWidth="true" (click)="clearConstrains()">
+                                 Limpar restrições
+                                 <nb-icon icon="trash-2" size="tiny"></nb-icon>
+                              </button>
+                           </div>
+                        </nb-card>
+                     </div>
+                  </div>
+               </nb-card-body>
+               </nb-card>
+            </div>
+            <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+               <nb-card>
+                  <nb-card-body id="eh-filters">
+                     <h6 style="color: #717c95;padding: 0.05rem 0.25rem;">Filtros</h6>
+                     <div id="filters">
+                     </div>
+                  </nb-card-body>
+               </nb-card>
+            </div>
+         </div>
+      </div>
+<!--   </nb-layout-column>-->
+   </div>
+   </nb-layout-column>
 
-      <mat-card-footer align="end">
-        <button mat-raised-button color="warn" (click)="sidenav.toggle()">Close</button>
-      </mat-card-footer>
-    </mat-card>
-  </mat-sidenav>
+</nb-layout>
 
-  <mat-sidenav-content>
-    <div id="map">
-      <app-navigator></app-navigator>
-      <button mat-raised-button color="primary" class="on-map" (click)="sidenav.toggle()">Open Config</button>
-      <svg [style.visibility]="options.get('aggr').value !== 'count' ? 'visible' : 'hidden'" id="svg-color-quant" class="on-map"></svg>
 
-      <mat-card class="map-card on-map" [formGroup]="options">
-        <div #mapwidgets>
-          <section>
-            <span class="badge badge-info">Zoom:</span> {{currentZoom}} of {{maximumZoom}}
-          </section>
-          <section>
-            <span class="badge badge-info">Count:</span> {{currentCount}} of {{maximumCount}}
-          </section>
-          <section>
-            <span class="badge badge-primary">Geometry Factor:</span> {{this.options.get('geom_size').value}}
-            <mat-slider min="0" max="25" step="1" thumbLabel="true" tickInterval="auto" formControlName="geom_size" (change)="setMapData()"></mat-slider>
-          </section>
-          <section>
-            <span class="badge badge-primary">Resolution:</span> {{this.options.get('resolution').value}}
-            <mat-slider min="1" max="25" step="1" thumbLabel="true" tickInterval="auto" formControlName="resolution" (change)="setMapData()"></mat-slider>
-          </section>
-          <section>
-            <span class="badge badge-danger">Aggregation:</span>
-            <mat-radio-group class="app-radio-group" formControlName="aggr" (change)="setAggr()">
-              <mat-radio-button class="app-radio-button" *ngFor="let opt of aggr_values" [value]="opt.value">
-                {{opt.viewValue}}
-              </mat-radio-button>
-            </mat-radio-group>
-          </section>
-          <section *ngIf="options.get('aggr').value !== 'count'">
-            <span class="badge badge-danger">Payload:</span>
-            <mat-form-field class="app-section">
-              <mat-select formControlName="payload" (selectionChange)="setAggr()">
-                <mat-option *ngFor="let opt of dataset.payloads" [value]="opt">
-                  {{opt}}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </section>
-        </div>
-      </mat-card>
-
-    </div>
-
-    <div *ngIf="options.get('aggr').value === 'quantile' || options.get('aggr').value === 'cdf'" class="app-footer-toolbar app-footer-container over-map">
-      <section class="app-footer-item">
-        <span class="badge badge-warning">Payload Parameter: {{ getPayloadInfo('value') }}</span>
-        <mat-slider [min]="getPayloadInfo('min')" [max]="getPayloadInfo('max')" [step]="getPayloadInfo('step')" thumbLabel="true"
-          tickInterval="auto" [ngModel]="getPayloadInfo('value')" (ngModelChange)="setPayloadInfo('value', $event)" (change)="setMapData()"></mat-slider>
-      </section>
-      <mat-form-field class="app-footer-item app-footer-field">
-        <input matInput placeholder="Temporal Band Quantiles" type="text" [(ngModel)]="bandQuantiles" (ngModelChange)="setAggrTemporalBand($event)">
-      </mat-form-field>
-
-    </div>
-
-    <div class="app-footer app-footer-container over-map">
-      <ng-template class="flex-item" #container></ng-template>
-    </div>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+<ng-template #contentTemplate let-data>
+   <form>
+      <div class="form-group">
+         <label class="label">Code</label>
+         <input nbInput fullWidth #project_hash type="text" value='{{ data.text }}' >
+      </div>
+      <div class="form-group row">
+         <div class="col-6 col-sm-6 col-md-6 col-lg-6 col-xxl-6">
+            <button nbButton fullWidth status="danger" (click)="copyToClipboard(project_hash)">
+               Copiar <nb-icon icon="copy-outline"></nb-icon>
+            </button>
+         </div>
+         <div class="col-6 col-sm-6 col-md-6 col-lg-6 col-xxl-6">
+            <button nbButton fullWidth status="primary" (click)="loadProjectHashValue(project_hash)">
+               Abrir <nb-icon icon="arrow-circle-right-outline"></nb-icon>
+            </button>
+         </div>
+      </div>
+   </form>
+</ng-template>

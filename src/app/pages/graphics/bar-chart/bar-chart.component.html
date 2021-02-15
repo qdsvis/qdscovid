@@ -1,0 +1,23 @@
+<!--
+ <nb-card size="small">
+      <nb-card-body id="{{uniqueId}}" class="no-overflow"></nb-card-body>
+ </nb-card>
+-->
+
+
+<nb-flip-card>
+   <nb-card-front>
+      <nb-card size="small">
+         <nb-card-body id="{{uniqueId}}" class="no-overflow"></nb-card-body>
+      </nb-card>
+   </nb-card-front>
+   <nb-card-back class="eh-categorical-table">
+      <nb-card size="small">
+         <nb-card-body>
+            <p align="center" style="color: #717c95; font-weight: bold;">{{ xLabel.toUpperCase() }}</p>
+            <ng2-smart-table [settings]="tableSettings" [source]="tableSource" class="small-padding-cell">
+            </ng2-smart-table>
+         </nb-card-body>
+      </nb-card>
+   </nb-card-back>
+</nb-flip-card>

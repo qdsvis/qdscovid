@@ -1,0 +1,43 @@
+<nb-card size="giant" id="dialogTable">
+   <nb-card-header>
+      <div class="row">
+         <h4 class="col-11 col-sm-11 col-md-11 col-lg-11 col-xl-11">{{ title }}</h4>
+         <nb-actions class="col-1 col-sm-1 col-md-1 col-lg-1 col-xl-1 eh-equipes-close" size="medium"> <nb-action style="padding: 0rem 0rem 1rem 2rem;" icon="close-outline" (click)="onClose()"></nb-action></nb-actions>
+<!--         <nb-icon class="col-1 col-sm-1 col-md-1 col-lg-1 col-xl-1" icon="close-outline" (click)="onClose()" size="large"></nb-icon>-->
+      </div>
+   </nb-card-header>
+   <nb-card-body class="no-overflow">
+      <div class="row">
+         <div class="col-lg-7 eh-lista-municipios">
+            <div class="row">
+               <h4 class="col-7 col-sm-7 col-md-7 col-lg-7 col-xl-7" >LISTA MUNICIPIOS</h4>
+               <button class="col-2 col-sm-2 col-md-2 col-lg-2 col-xl-2 eh-csv-export" nbButton appearance="ghost" title="Export to csv" (click)="exportDataToCsv(source, settings, 'municipios')">CSV <nb-icon icon="download-outline"></nb-icon></button>
+            </div>
+            <div class="row">
+               <ng2-smart-table [settings]="settings" [source]="source" (userRowSelect)="selectRows($event)">
+               </ng2-smart-table>
+            </div>
+         </div>
+         <div class="col-lg-5 force-overflow eh-detalle-equipes" style="max-height: 600px;">
+            <h4>EQUIPES/MUNICIPIO</h4>
+            <div>
+               <div *ngFor="let mun of getKeys(equipesXMunicipio)">
+                  <div class="row">
+                     <h5 class="col-10 col-sm-10 col-md-10 col-lg-10 col-xl-10" >{{ nameMunicipio.get(mun) }} ({{ equipesXMunicipio.get(mun).data.length }})</h5>
+                     <button class="col-2 col-sm-2 col-md-2 col-lg-2 col-xl-2" nbButton appearance="ghost" title="Export to csv" (click)="exportDataToCsv(equipesXMunicipio.get(mun), settingsDet, nameMunicipio.get(mun))">CSV <nb-icon icon="download-outline"></nb-icon></button>
+                  </div>
+                  <ng2-smart-table [settings]="settingsDet" [source]="equipesXMunicipio.get(mun)">
+                  </ng2-smart-table>
+               </div>
+            </div>
+            <!--<nb-list>
+               <nb-list-item *ngFor="let mun of getKeys(equipesXMunicipio)">
+                  <h5>{{ nameMunicipio.get(mun) }} ({{ equipesXMunicipio.get(mun).data.length }})</h5>
+                  <ng2-smart-table [settings]="settingsDet" [source]="equipesXMunicipio.get(mun)">
+                  </ng2-smart-table>
+               </nb-list-item>
+            </nb-list>-->
+         </div>
+      </div>
+   </nb-card-body>
+</nb-card>

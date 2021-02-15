@@ -1,0 +1,21 @@
+<nb-card size="medium" [formGroup]="options">
+   <nb-card-header>
+      <form [formGroup]="options">
+<!--         <span class="badge badge-secondary">From:</span>-->
+         FROM:
+         <!--<md2-datepicker formControlName="fromDateTime" (change)="broadcast()" placeholder="Start DateTime" type="datetime" startView="month"
+            format="M/d/y H:mm A"></md2-datepicker>-->
+         <input nbInput placeholder="Start DateTime" [nbDatepicker]="formpickerbegin" formControlName="fromDateTime">
+         <nb-datepicker #formpickerbegin format="MM/DD/YYYY" (dateChange)="broadcast($event, null)" [min]="minDate" [max]="finalDate"></nb-datepicker>
+<!--         <nb-datepicker #formpickerbegin format="M/d/y H:mm"></nb-datepicker>-->
+
+<!--         <span class="badge badge-secondary">To:</span>-->
+         TO:
+         <!--<md2-datepicker formControlName="toDateTime" (change)="broadcast()" placeholder="End DateTime" type="datetime" startView="month"
+            format="M/d/y H:mm A"></md2-datepicker>-->
+         <input nbInput placeholder="Start DateTime" [nbDatepicker]="formpickerend" formControlName="toDateTime">
+         <nb-datepicker #formpickerend format="MM/DD/YYYY" (dateChange)="broadcast(null, $event)" [min]="initialDate" [max]="maxDate"></nb-datepicker>
+      </form>
+   </nb-card-header>
+   <nb-card-body id="{{uniqueId}}" class="no-overflow"></nb-card-body>
+</nb-card>

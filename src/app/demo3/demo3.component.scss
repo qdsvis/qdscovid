@@ -1,103 +1,159 @@
+@import '../@theme/styles/themes';
 
-#map {
-  height:100%;
-  width:100%;
-}
+@include nb-install-component() {
 
-.map-card {
-  position: relative;
-  top: 25px;
-  right: 15px;
-  float: right;
-  font-size: 1.20em;
-  background: rgba(200, 200, 200, 1.0) !important;
-  padding: 10px;
-}
+   nb-card-body {
+      padding: 0;
+   }
 
-.app-container {
-  position: absolute;
-  top: 55px;
-  bottom: 0px;
-  left: 0;
-  right: 0;
-}
+   ::ng-deep .leaflet-top, ::ng-deep .leaflet-bottom {
+      z-index: 997;
+   }
 
-.app-sidenav {
-/*   display: flex;
-  align-items: center;
-  justify-content: center; */
-  width: 400px;
-}
+   ::ng-deep .leaflet-container {
+      width: 100%;
+      height: 40.2rem;//nb-theme(card-height-large);
+   }
 
-.app-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-}
+   .map-card {
+      position: relative;
+      width: 210px;
+      top: 15px;
+      right: 1%;
+      float: right;
+      font-size: 1.10em;
+      //background: #c8c8c8 !important;
+      background-color: rgba(255, 255, 255, 0.75);
+      //box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
+      padding: 10px;
+      max-height: 450px;
+      overflow-y: scroll;
+      cursor: auto;
+      //color: #717c95;
+   }
 
-.app-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 180px;
-  background: rgba(255, 255, 255, 0.65);
-}
+   .height-small {
+      line-height: 1.20rem;
+      padding-bottom: 0.75rem;
+   }
 
-.app-footer-toolbar {
-  position: fixed;
-  bottom: 180px;
-  left: 0;
-  right: 0;
-  height: 60px;
-  background: rgba(255, 255, 255, 0.65);
-}
+   .height-medium {
+      line-height: 1.60rem;
+      padding-bottom: 0.75rem;
+   }
 
-.app-section {
-  display: flex;
-  align-content: center;
-  align-items: center;
-  /* height: 60px; */
-}
+   .on-map {
+      position: absolute;
+      z-index: 900;
+   }
 
-.app-footer-container {
-  display: flex; /* or inline-flex */
-  width: 100%;
-  align-items: stretch;
-  flex-direction: row;
-}
+   .bgd-legend{
+      position: absolute;
+      width: 136px;
+      bottom: 1rem;
+      left: 1%;
+      float: right;
+      border-radius: 2px;
+      background-color: rgba(255, 255, 255, 0.85);
+      padding: 10px 10px 15px;
+      height: 240px;
+   }
 
-.app-footer-container > * {
-  width: 100%;
-}
+   .legend-color-map {
+      position: absolute;
+      width: 136px;
+      bottom: 1rem;
+      left: 1%;
+      float: right;
+      border-radius: 2px;
+      box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
+      padding: 10px 10px 15px;
+      height: 240px;
+      fill: #717c95;
+   }
 
-.app-radio-group {
-  display: inline-flex;
-  flex-direction: column;
-}
+   .nb-badge-custom {
+      border-radius: 0.25rem;
+      font-family: Open Sans, sans-serif;
+      font-size: 0.625rem;
+      font-weight: 800;
+      padding: 0.15rem 0.25rem;
+      color: #ffffff;
+      background-color: #66B1D9;
+   }
 
-.app-radio-button {
-  margin: 5px;
-}
+   .nb-badge-gray {
+      border-radius: 0.45rem;
+      font-family: Open Sans, sans-serif;
+      font-size: 0.625rem;
+      font-weight: 800;
+      padding: 0.25rem 0.25rem;
+      margin: 0.3rem 0.05rem;
+      color: #ffffff;
+      background-color: #C7C7C7;
+   }
 
-.app-selected-value {
-  margin: 15px 0;
-}
+   .nb-color-warning{
+      background-color:nb-theme(color-warning-default);
+   }
+   .nb-color-danger{
+      background-color:#FFB3A9;
+   }
 
-.app-footer-field {
-  padding-top: 3px;
-  margin-right: 10px;
-}
+   .nb-tiny-padding {
+      //padding: 0.2rem 1.25rem;
+   }
 
-#svg-color-quant {
-  position: absolute;
-  top: 79px;
-  left: 10px;
-  background-color: rgba(255, 255, 255, 0.5);
-  border-radius: 2px;
-  box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
-  padding: 10px 10px 15px;
-  width: 100px;
-  height: 194px;
+   //slider
+   // We need to use ::ng-deep to overcome view encapsulation
+   ::ng-deep {
+      .custom-slider .ng5-slider .ng5-slider-bar {
+         background: #9ecae1;
+         //background: #ffe4d1;
+         height: 2px;
+      }
+      .custom-slider .ng5-slider .ng5-slider-selection {
+         //background: orange;
+         background: #0b6abd;
+      }
+
+      .custom-slider .ng5-slider .ng5-slider-pointer {
+         width: 8px;
+         height: 16px;
+         top: auto; /* to remove the default positioning */
+         bottom: 0;
+         background-color: #333;
+         border-top-left-radius: 3px;
+         border-top-right-radius: 3px;
+      }
+
+      .custom-slider .ng5-slider .ng5-slider-pointer:after {
+         display: none;
+      }
+
+      .custom-slider .ng5-slider .ng5-slider-bubble {
+         bottom: 14px;
+      }
+
+      .custom-slider .ng5-slider .ng5-slider-limit {
+         font-weight: bold;
+         //color: orange;
+         color: #0b6abd;
+      }
+
+      .custom-slider .ng5-slider .ng5-slider-tick {
+         width: 1px;
+         height: 10px;
+         margin-left: 4px;
+         border-radius: 0;
+         //background: #ffe4d1;
+         background: #9ecae1;
+         top: -1px;
+      }
+
+      .custom-slider .ng5-slider .ng5-slider-tick.ng5-slider-selected {
+         //background: orange;
+         background: #0b6abd;
+      }
+   }
 }

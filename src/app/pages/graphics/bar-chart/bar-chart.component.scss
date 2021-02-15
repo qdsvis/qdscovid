@@ -1,0 +1,39 @@
+.tooltip {
+   border: 1px solid transparent;
+   border-radius: .25rem;
+   background: #fff;
+   box-shadow: 0 0.5rem 1rem 0 rgba(44,51,73,.1);
+   font-size: 12px;
+   min-height: 40px;
+   padding: 2px;
+   pointer-events: none;
+   position: absolute;
+   text-align: center;
+   width: 150px;
+}
+.tooltip span {
+   color: #dd3e45;
+   //font-weight: bold;
+}
+
+.nb-badge-custom {
+   border-radius: 0.45rem;
+   font-family: Open Sans, sans-serif;
+   font-size: 0.625rem;
+   font-weight: 800;
+   padding: 0.25rem 0.25rem;
+   margin: 0.3rem 0.05rem;
+   color: #ffffff;
+   background-color: #66B1D9;
+}
+
+.nb-badge-gray {
+   border-radius: 0.45rem;
+   font-family: Open Sans, sans-serif;
+   font-size: 0.625rem;
+   font-weight: 800;
+   padding: 0.25rem 0.25rem;
+   margin: 0.3rem 0.05rem;
+   color: #ffffff;
+   background-color: #C7C7C7;
+}

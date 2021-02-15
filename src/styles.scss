@@ -25,35 +25,40 @@ $theme: mat-light-theme($app-primary, $app-accent, $app-warn);
 @include mat-datetimepicker-theme($theme);
 
 html, body {
-  height: 100%;
-  width: 100%;
-  margin: 0;
-  overflow: hidden
+   height: 100%;
+   width: 100%;
+   margin: 0;
+   overflow: hidden;
+   font-family: 'Lato', sans-serif;
+}
+
+.tick {
+  font-family: 'Lato', sans-serif;
 }
 
 .leaflet-container {
-  background: rgb(202, 210, 211);
+   background: rgb(202, 210, 211);
 }
 
 .leaflet-clickable {
-  cursor: crosshair !important;
+   cursor: crosshair !important;
 }
 
-#map > div.leaflet-control-container > div.leaflet-bottom.leaflet-right > div {
-  visibility: hidden;
+#map > div.leaflet-control-container > div.leaflet-bottom.leaflet-right > div.leaflet-control-attribution.leaflet-control {
+   visibility: hidden;
 }
 
 .mat-slider-horizontal {
-  min-width: 100% !important;
+   min-width: 100% !important;
 }
 
 .over-map {
-  z-index: 9000;
+   z-index: 9000;
 }
 
 .on-map {
-  position: absolute;
-  z-index: 900;
+   position: absolute;
+   z-index: 900;
 }
 
 /* Rules for sizing the icon. */
@@ -72,7 +77,69 @@ html, body {
 .material-icons.md-light.md-inactive { color: rgba(255, 255, 255, 0.3); }
 
 .app-footer-item {
-  flex: 1 1 100%;
+  max-height: 31.75%;
+  flex: 1 0 30%;
+  padding: 1px;
 }
 
 [hidden] { display: none !important;}
+
+.leaflet-control-layers {
+  top: 0px;
+}
+
+app-bar-chart svg, app-line-chart svg {
+   color: #717c95;
+}
+
+.no-overflow {
+   overflow: visible;
+}
+
+.leaflet-control-layers-base span {
+   color: #717c95;
+}
+
+.gu-mirror {
+   position: fixed !important;
+   margin: 0 !important;
+   z-index: 9999 !important;
+   opacity: 0.8;
+   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
+   filter: alpha(opacity=80);
+   pointer-events: none;
+}
+
+.gu-hide {
+   left: -9999px !important;
+}
+
+.gu-unselectable {
+   -webkit-user-select: none !important;
+   -moz-user-select: none !important;
+   -ms-user-select: none !important;
+   user-select: none !important;
+}
+
+.gu-transit {
+   opacity: 0.2;
+   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=20)";
+   filter: alpha(opacity=20);
+}
+
+.small-margin {
+   margin-left: 3px;
+   margin-right: 3px;
+}
+
+.text-right {
+   text-align: right;
+}
+
+.button-sample {
+   display: flex;
+   align-items: center;
+}
+
+
+

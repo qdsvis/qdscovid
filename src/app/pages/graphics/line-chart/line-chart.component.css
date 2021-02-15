@@ -1,0 +1,32 @@
+.line {
+  fill: none;					
+  stroke: url(#line-gradient);	
+  stroke-width: 2px;			
+}
+.dot {
+   fill: none;
+   stroke: url(#line-gradient);
+   stroke-opacity: 0;
+   stroke-width: 3px;
+}
+
+.tooltip {
+   border: 1px solid transparent;
+   border-radius: .25rem;
+   background: #fff;
+   box-shadow: 0 0.5rem 1rem 0 rgba(44,51,73,.1);
+   font-size: 12px;
+   min-height: 40px;
+   padding: 2px;
+   pointer-events: none;
+   position: absolute;
+   text-align: center;
+   width: 150px;
+}
+.tooltip span {
+   color: #dd3e45;
+   /*font-weight: bold;*/
+}
+form {
+   color: #717c95;
+}

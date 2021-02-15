@@ -2,12 +2,15 @@ import { Injectable } from '@angular/core';
 
 @Injectable()
 export class ConfigurationService {
-  public Server = 'http://localhost:7000/';
-  public ApiUrl = 'api';
-  public ServerWithApiUrl = this.Server + this.ApiUrl;
+   // public Server = 'http://combaftp.inf.ufrgs.br:10091/';
+   // public Server = 'http://143.54.13.50:7000/';
+   // public Server = 'http://143.54.13.201:7000/';
+   public Server = 'http://192.168.0.207:7000/';
+   public ApiUrl = 'api';
+   public ServerWithApiUrl = this.Server + this.ApiUrl;
 
-  public defaultDataset = 'on_time_performance_2014';
-  
-  constructor() { }
+   public defaultDataset = 'qdscovid';
+
+   constructor() { }
 
 }
