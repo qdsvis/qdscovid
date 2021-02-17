@@ -1,0 +1,1 @@
+{"version":3,"sources":["webpack:///./src/assets/scripts/general.js"],"names":[],"mappings":";;;;;;;;;AAAA;AACA;AACA;AACA;AACA,IAAI;AACJ,CAAC","file":"assets-scripts-general-js-es2015.js","sourcesContent":["$(document).ready(function() {\n   $(\".panel-left\").resizable({\n      handleSelector: \".splitter\",\n      resizeHeight: false\n   });\n});\n"],"sourceRoot":""}
