@@ -80,13 +80,13 @@ export class SchemaService {
             // tipoTeste
             'tipoTeste_label': "Tipo de teste",
             'tipoTeste_desc': ['Enzimaimunoensaio',
-               'Enzimaimunoensaio',
+               'Enzimaimunoensaio - IgM',
                'Imunoensaio por Eletroquimioluminescencia',
-               'Imunoensaio por Eletroquimioluminescencia',
+               'Imunoensaio por Eletroquimioluminescencia - IgG',
                'Quimioluminescencia', 'RT-PCR', 'Teste rápido',
                'Teste rápido - anticorpo', 'Teste rápido - antígeno', 'NA'],
             'tipoTeste': ['ELISA', 'ELISA-IgM', 'ECLIA', 'ECLIA-IgG', 'CLIA',
-               'T. ráp.', 'Anticorpo', 'Antígeno', 'NA'],
+               'RT-PCR', 'T. ráp.', 'Anticorpo', 'Antígeno', 'NA'],
             // estadoTeste
             'estadoTeste_label': "Estado do teste",
             'estadoTeste_desc': ["Coletado", "Concluido",
