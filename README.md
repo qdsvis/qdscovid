@@ -34,7 +34,7 @@ QDSCOVID requires:
 
 ## Installation
 
-Do npm install and after change the line 14 of file `./node_modules/md2/core/common-behaviors/common-module.js` by:
+Do `npm install` and after change the line 14 of file `./node_modules/md2/core/common-behaviors/common-module.js` by:
 
 ```javascript
 import { DOCUMENT } from "@angular/common";
@@ -43,3 +43,15 @@ import { DOCUMENT } from "@angular/common";
 ## Running
 
 `ng serve --host=0.0.0.0 --port 4200`
+
+## Deploy
+
+First, build:
+
+`ng build --base-href https://covid19.ufrgs.dev/qdscovid/`
+
+Then, pass the files generated to page of the project:
+
+`ngh --branch=page`
+
+Finally, open the page in a browser: [Link](https://covid19.ufrgs.dev/qdscovid)

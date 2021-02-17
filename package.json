@@ -43,6 +43,7 @@
     "@swimlane/ngx-charts": "^12.0.1",
     "@types/crypto-js": "^3.1.43",
     "@types/googlemaps": "^3.36.6",
+    "angular-cli-ghpages": "^1.0.0-rc.1",
     "angular-tag": "^3.0.0",
     "angular-tree-component": "^8.4.0",
     "angular2-chartjs": "^0.5.1",
