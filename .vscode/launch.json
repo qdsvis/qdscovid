@@ -10,7 +10,6 @@
       "request": "launch",
       "url": "http://localhost:4200/#",
       "webRoot": "${workspaceFolder}",
-      "runtimeExecutable": "/usr/bin/google-chrome-stable",
       "smartStep": true,
       "runtimeArgs": [
         "--disable-session-crashed-bubble",
