@@ -12505,10 +12505,10 @@ window.global = window;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! /home/m0rb1u5/researches/QDSCOVID/qdscovid/node_modules/@angular-devkit/build-angular/src/angular-cli-files/models/es5-polyfills.js */"./node_modules/@angular-devkit/build-angular/src/angular-cli-files/models/es5-polyfills.js");
-__webpack_require__(/*! /home/m0rb1u5/researches/QDSCOVID/qdscovid/node_modules/@angular-devkit/build-angular/src/angular-cli-files/models/es5-jit-polyfills.js */"./node_modules/@angular-devkit/build-angular/src/angular-cli-files/models/es5-jit-polyfills.js");
-__webpack_require__(/*! /home/m0rb1u5/researches/QDSCOVID/qdscovid/src/polyfills.ts */"./src/polyfills.ts");
-module.exports = __webpack_require__(/*! /home/m0rb1u5/researches/QDSCOVID/qdscovid/node_modules/@angular-devkit/build-angular/src/angular-cli-files/models/jit-polyfills.js */"./node_modules/@angular-devkit/build-angular/src/angular-cli-files/models/jit-polyfills.js");
+__webpack_require__(/*! /home/noa/Documents/PROJECTS/covid/dashboards/qdscovid/node_modules/@angular-devkit/build-angular/src/angular-cli-files/models/es5-polyfills.js */"./node_modules/@angular-devkit/build-angular/src/angular-cli-files/models/es5-polyfills.js");
+__webpack_require__(/*! /home/noa/Documents/PROJECTS/covid/dashboards/qdscovid/node_modules/@angular-devkit/build-angular/src/angular-cli-files/models/es5-jit-polyfills.js */"./node_modules/@angular-devkit/build-angular/src/angular-cli-files/models/es5-jit-polyfills.js");
+__webpack_require__(/*! /home/noa/Documents/PROJECTS/covid/dashboards/qdscovid/src/polyfills.ts */"./src/polyfills.ts");
+module.exports = __webpack_require__(/*! /home/noa/Documents/PROJECTS/covid/dashboards/qdscovid/node_modules/@angular-devkit/build-angular/src/angular-cli-files/models/jit-polyfills.js */"./node_modules/@angular-devkit/build-angular/src/angular-cli-files/models/jit-polyfills.js");
 
 
 /***/ })
