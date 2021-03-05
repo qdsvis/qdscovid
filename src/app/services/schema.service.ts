@@ -46,7 +46,7 @@ export class SchemaService {
          // 'temporalDimension': {'dataInicioSintomas': { 'lower': 0, 'upper': 0 }},
          'spatialDimension': ['coord'],
          // 'barCategoricalDimension': ['tipo_origem', 'idade', 'sexo'],
-         'barCategoricalDimension': ['sexo',
+         'barCategoricalDimension': ['sexo', 'idade',
             'profissionalSaude',
             'tipoTeste',
             'estadoTeste',
