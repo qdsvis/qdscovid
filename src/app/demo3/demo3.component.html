@@ -96,10 +96,10 @@
                               </section>
                            </div>
                            <div class="height-small">
-                              <button nbButton id="eh-equipes-button" status="primary" size="tiny" fullWidth="true" (click)="showEquipes()">
+                              <!--<button nbButton id="eh-equipes-button" status="primary" size="tiny" fullWidth="true" (click)="showEquipes()">
                                  Avaliação de Equipes
                                  <nb-icon icon="people-outline" size="tiny"></nb-icon>
-                              </button>
+                              </button>-->
                               <button nbButton id="clear-button" status="danger" size="tiny" fullWidth="true" (click)="clearConstrains()">
                                  Limpar restrições
                                  <nb-icon icon="trash-2" size="tiny"></nb-icon>
@@ -119,6 +119,11 @@
                      </div>
                   </nb-card-body>
                </nb-card>
+            </div>
+            <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+               <div id="eh-calendar">
+                  <ng-template #calendarContainer></ng-template>
+               </div>
             </div>
          </div>
       </div>

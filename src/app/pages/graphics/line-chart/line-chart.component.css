@@ -1,7 +1,7 @@
 .line {
-  fill: none;					
-  stroke: url(#line-gradient);	
-  stroke-width: 2px;			
+   fill: none;
+   stroke: url(#line-gradient);
+   stroke-width: 2px;
 }
 .dot {
    fill: none;
@@ -29,4 +29,9 @@
 }
 form {
    color: #717c95;
+}
+.zoom {
+   /*cursor: move;*/
+   fill: none;
+   pointer-events: all;
 }

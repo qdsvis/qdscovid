@@ -47,6 +47,7 @@ import {Subscription} from "rxjs";
 import {DragulaService} from "ng2-dragula";
 import {ToastrComponent} from "../pages/modal-overlays/toastr/toastr.component";
 import {LineChartComponent} from "../pages/graphics/line-chart/line-chart.component";
+import {CalendarComponent} from "../pages/graphics/calendar/calendar.component";
 import {Http} from "@angular/http";
 import {DialogEquipesComponent, MunElement} from "../pages/modal-overlays/dialogEquipes/dialog-equipes.component";
 
@@ -91,10 +92,12 @@ interface DimConstraints {
 export class Demo3Component implements OnInit, AfterViewInit {
 
    @ViewChild('container', { read: ViewContainerRef, static: true }) container: ViewContainerRef;
+   @ViewChild('calendarContainer', { read: ViewContainerRef, static: true }) calendarContainer: ViewContainerRef;
    //@ViewChild('containerlarge', { read: ViewContainerRef, static: true }) containerLarge: ViewContainerRef;
    @ViewChild('mapwidgets', {static: true}) mapwidgets: ElementRef;
 
    private widgets: Array<WidgetType> = [];
+   private calendarWidget: WidgetType;
 
    private temporal: DimConstraints = {};
    private bar_categorical: DimConstraints = {};
@@ -117,7 +120,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
       sus_ciap: [],
       example: [],
       spotifyvis: [],
-      qdscovid: [],
+      qdscovid_registers: [],
    };
 
    notRefreshTreemapGraphs = [];
@@ -884,6 +887,13 @@ export class Demo3Component implements OnInit, AfterViewInit {
       this.bar_categorical = {};
       this.treemap_categorical = {};
       this.notRefreshTreemapGraphs = [];
+
+      for(let dimTemp in this.dataset.temporalDimension) {
+         this.setTemporalData(dimTemp,
+            [this.dataset.temporalDimension[dimTemp].lower, this.dataset.temporalDimension[dimTemp].upper]
+         );
+      }
+
       for (const dim of this.schemaService.getGlobal()["regionCategoricalDimension"]) {
          this.geo.json_selected.set(dim, new Map());
       }
@@ -946,13 +956,17 @@ export class Demo3Component implements OnInit, AfterViewInit {
 
       return constrainsts;
    }
-   setTemporalData = (dim: string, interval: Array<string>) => {
+
+   setTemporalData = (dim: string, interval: Array<string>, notFirstLoad=true) => {
 
       const values = '/const=' + dim + '.interval.(' + interval[0] + ':' + interval[1] + ')';
       this.temporal[dim] = values;
 
-      this.loadWidgetsData();
-      this.setMapData();
+      if(notFirstLoad){
+         // this.updateColorScale();
+         this.loadWidgetsData();
+         this.setMapData();
+      }
    }
 
    setRegionData = (latlng: any, zoom: number): void => {
@@ -994,7 +1008,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
    loadWidgetsData() {
       this.updateInfo();
       this.updateProjectHashValue();
-
+      // console.log(query);
       let color = 'normal';
 
       for (const ref of this.widgets) {
@@ -1155,6 +1169,14 @@ export class Demo3Component implements OnInit, AfterViewInit {
 
       this.updateAggr();
 
+      for(let dimTemp in this.dataset.temporalDimension){
+         this.setTemporalData(
+            dimTemp,
+            [this.dataset.temporalDimension[dimTemp].lower, this.dataset.temporalDimension[dimTemp].upper],
+            false
+         );
+      }
+
       this.geocodingService.geocode(this.dataset.local)
          .subscribe(location => {
             this.mapService.flyTo(location);
@@ -1256,6 +1278,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
          else {
             componentInstance.setXLabel(dim);
          }
+         componentInstance.setLowerUpper(lower, upper);
          componentInstance.register(dim, this.setTemporalData);
          this.widgets.push({ key: dim, type: 'temporal', widget: componentInstance });
       }
@@ -1270,17 +1293,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
 
       this.clearConstrains();
 
-      const nameCSV = this.schemaService.getGlobal()["equipe"]["nameCSV"];
-      const key1 = this.schemaService.getGlobal()["equipe"]["key1"];
-      const key2 = this.schemaService.getGlobal()["equipe"]["key2"];
-      this.http.get('./assets/csv/' + nameCSV).subscribe(
-         data => {
-            this.ibge2Equipe = this.csvToMap(data['_body'], key1, key2);
-         },
-         error => {
-            console.log(error);
-         }
-      );
+      // this.createCalendarWidget();
    }
 
    // isDataAvailable:boolean = false;
@@ -1332,6 +1345,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
          this.getTreemapCategoricalConst() +
          this.getTemporalConst() +
          this.getRegionConst(this.getCurrentFeature());
+
       // let query = updateQueryData();
       this.dataService.query(query).subscribe(data => {
          this.info_events[0] = data[0];
@@ -1686,63 +1700,6 @@ export class Demo3Component implements OnInit, AfterViewInit {
          mapResult.get(key).set(key2, row);
       });
       return mapResult;
-   }
-
-   showEquipes(): void {
-      const idx = this.schemaService.getGlobal()["regionCategoricalDimension"].length - 1;
-      const dim = this.schemaService.getGlobal()["regionCategoricalDimension"][idx];
-      const mun: MunElement[] = [];
-      const selectedMap = new Map();
-      let selected = this.geo.json_selected.get(dim);
-      selected.forEach((value, key, map) => {
-         if (value) {
-            let r_code_2 = String(this.region_code(key, idx));
-            selectedMap.set(r_code_2, key);
-         }
-      });
-
-      let query = '/query/dataset=' + this.dataset.datasetName + '/aggr=count' +
-         this.getBarCategoricalConst() +
-         this.getTreemapCategoricalConst() +
-         this.getTemporalConst() +
-         this.getRegionConstWDim(dim, idx) + "/group=" + dim;
-
-      this.dataService.query(query).subscribe(data => {
-         for (let i = 0; i <  data[0].length; i++) {
-            const ibge_code = this.dataset.aliases[dim][data[0][i][0]];
-            const key = selectedMap.get(ibge_code);
-            const atend = data[0][i][1];
-            const pop = this.population_code(key, idx);
-            const den = atend / pop;
-            mun.push({cod_qds: data[0][i][0], cod_ibge: ibge_code, name: this.region_name(key, idx), atend: atend, pop: pop, den: den});
-         }
-
-         this.dialogService.open(DialogEquipesComponent, {
-            context: {
-               title: 'Avaliação de equipes',
-               data: {
-                  datasetName: this.dataset.datasetName,
-                  dim: dim,
-                  consts: this.getBarCategoricalConst() + this.getTreemapCategoricalConst() + this.getTemporalConst(),
-                  ibge2Equipe: this.ibge2Equipe,
-                  data: mun
-               }
-            },
-         }
-         );
-
-         /*const dialogRef = this.dialog.open(DialogEquipes, {
-            width: '100%',
-            maxWidth: '100%',
-            data: {
-               datasetName: this.dataset.datasetName,
-               dim: dim,
-               consts: this.getBarCategoricalConst() + this.getTreemapCategoricalConst() + this.getTemporalConst(),
-               ibge2Equipe: this.ibge2Equipe,
-               data: new MatTableDataSource<MunElement>(mun)
-            }
-         });*/
-      });
    }
 
    preInitialize() {

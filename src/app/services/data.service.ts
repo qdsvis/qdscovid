@@ -21,11 +21,22 @@ export class DataService {
    }
 
 
-   query(action: string): Observable<any> {
+   query(action: string, complete=false): Observable<any> {
+      if(complete==true){
+         return this.http
+            .get(action)
+            .map(response => response.json());
+      }
       return this.http
-      .get(this.config.ServerWithApiUrl + action)
-      .map(response => response.json());
+         .get(this.config.ServerWithApiUrl + action)
+         .map(response => response.json());
    }
+
+   // query(action: string): Observable<any> {
+   //    return this.http
+   //    .get(this.config.ServerWithApiUrl + action)
+   //    .map(response => response.json());
+   // }
 
    schema(action: string): Observable<any> {
       return this.http

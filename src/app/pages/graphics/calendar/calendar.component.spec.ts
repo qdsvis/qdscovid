@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { LineChartComponent } from './line-chart.component';
+import { CalendarComponent } from './calendar.component';
 
 describe('CalendarComponent', () => {
-   let component: LineChartComponent;
-   let fixture: ComponentFixture<LineChartComponent>;
+   let component: CalendarComponent;
+   let fixture: ComponentFixture<CalendarComponent>;
 
    beforeEach(async(() => {
       TestBed.configureTestingModule({
-         declarations: [ LineChartComponent ]
+         declarations: [ CalendarComponent ]
       })
          .compileComponents();
    }));
 
    beforeEach(() => {
-      fixture = TestBed.createComponent(LineChartComponent);
+      fixture = TestBed.createComponent(CalendarComponent);
       component = fixture.componentInstance;
       fixture.detectChanges();
    });

@@ -26,7 +26,7 @@ import { DataService } from './services/data.service';
 import { ConfigurationService } from './services/configuration.service';
 import { LineChartComponent } from './pages/graphics/line-chart/line-chart.component';
 import { SchemaService } from './services/schema.service';
-import { CalendarComponent } from './calendar/calendar.component';
+import { CalendarComponent } from './pages/graphics/calendar/calendar.component';
 // import { BarChartComponent } from './pages/graphics/bar-chart/bar-chart.component';
 import { WidgetHostDirective } from './widget-host.directive';
 import { TreemapChartComponent } from './pages/graphics/treemap-chart/treemap-chart.component';

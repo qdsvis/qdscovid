@@ -1,0 +1,14 @@
+<nb-card size="medium" [formGroup]="options">
+   <nb-card-header>
+      <form [formGroup]="options">
+
+         <nb-select status="primary" placeholder="tiny" shape="round" fullWidth="false" size="small" formControlName="selectedYear" (selectedChange)="broadcast()">
+            <nb-option *ngFor="let opt of yearList" [value]="opt">
+               {{opt}}
+            </nb-option>
+         </nb-select>
+         <svg id="svg-color-quant-{{uniqueId}}"></svg>
+      </form>
+   </nb-card-header>
+   <nb-card-body id="{{uniqueId}}" class="no-overflow"></nb-card-body>
+</nb-card>
