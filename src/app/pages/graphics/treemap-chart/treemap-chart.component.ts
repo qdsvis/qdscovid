@@ -82,6 +82,7 @@ export class TreemapChartComponent implements Widget, OnInit, AfterViewInit, OnD
     });
 
     function getElementsTree(element, data, names, labels, dict) {
+       console.log(element, data, names, labels, dict);
       if (!Array.isArray(element)){
         if (typeof data[element] === 'undefined')
           return undefined;

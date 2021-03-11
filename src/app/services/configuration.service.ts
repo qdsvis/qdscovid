@@ -9,7 +9,8 @@ export class ConfigurationService {
    public ApiUrl = 'api';
    public ServerWithApiUrl = this.Server + this.ApiUrl;
 
-   public defaultDataset = 'qdscovid';
+   public defaultDataset = 'qdscovid_registers';
+   //public defaultDataset = 'qdscovid_registros';
 
    constructor() { }
 
