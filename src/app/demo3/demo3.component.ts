@@ -122,6 +122,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
       spotifyvis: [],
       qdscovid_registers: [],
       qdscovid_symptoms: [],
+      qdscovid_conditions: [],
    };
 
    notRefreshTreemapGraphs = [];
