@@ -82,7 +82,6 @@ export class TreemapChartComponent implements Widget, OnInit, AfterViewInit, OnD
     });
 
     function getElementsTree(element, data, names, labels, dict) {
-       console.log(element, data, names, labels, dict);
       if (!Array.isArray(element)){
         if (typeof data[element] === 'undefined')
           return undefined;
@@ -517,7 +516,10 @@ export class TreemapChartComponent implements Widget, OnInit, AfterViewInit, OnD
     }
 
     function getTitleTooltip(d){
-      return d.data.name.split(' ')[1] + ': <span>' + d.data.shortName + '<br>' + d.data.longName + '</span><br> value: <span>' + d3.format(",")(d.value) + '</span>';
+       // console.log(d);
+      return d.data.name.split(' ')[1] + ': <span>' //+ d.data.shortName + '<br>'
+         + d.data.longName + '</span><br>Valor: <span>' + d3.format(",")(d.value) + '</span>'
+         + '<br>Porcentagem: <span>' + d3.format(".2f")(100*(d.value/d.parent.value)) + '%</span>';
     }
 
      function getGrandparentTooltip(){
@@ -536,7 +538,7 @@ export class TreemapChartComponent implements Widget, OnInit, AfterViewInit, OnD
         tooltip.transition().duration(200).style('opacity', 0.95);
         return tooltip.style("visibility", "visible")
            .style("opacity", 1)
-           .style('left', `${d3.event.layerX - 20}px`)
+           .style('left', `${d3.event.layerX - 100}px`)
            .style('top', `${d3.event.layerY-30}px` )
      }
 
