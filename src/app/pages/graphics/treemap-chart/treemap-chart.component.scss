@@ -69,3 +69,17 @@ rect.parent,
    color: #dd3e45;
 }
 
+.button-treemap text {
+   font-weight: bold;
+   fill: #606060;
+}
+//.button-treemap rect {
+//   stroke-width: 1px;
+//}
+.button-treemap rect {
+   fill: orange;
+   border: 3px #606060;
+}
+.button-treemap:hover rect {
+   fill: #ee9700;
+}

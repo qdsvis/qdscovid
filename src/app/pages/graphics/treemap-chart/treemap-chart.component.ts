@@ -1,4 +1,14 @@
-import { Component, ViewChild, OnInit, ElementRef, AfterViewInit, Input, ViewEncapsulation, OnDestroy } from '@angular/core';
+import {
+   Component,
+   ViewChild,
+   OnInit,
+   ElementRef,
+   AfterViewInit,
+   Input,
+   ViewEncapsulation,
+   OnDestroy,
+   ViewContainerRef
+} from '@angular/core';
 
 import { Widget } from '../../../widget';
 
@@ -8,7 +18,6 @@ import { DataService } from '../../../services/data.service';
 import { ConfigurationService } from '../../../services/configuration.service';
 import { SchemaService } from '../../../services/schema.service';
 import { ActivatedRoute } from '@angular/router';
-//import {forEach} from "@angular/router/src/utils/collection";
 
 @Component({
   selector: 'app-treemap-chart',
@@ -21,6 +30,7 @@ export class TreemapChartComponent implements Widget, OnInit, AfterViewInit, OnD
 
   dataset: any;
   data = [];
+  dataCsv = [];
   dataJson = {};
   labelsDict = {};
   dim = '';
@@ -42,6 +52,7 @@ export class TreemapChartComponent implements Widget, OnInit, AfterViewInit, OnD
     'outlier': ['rgb(215,25,28)', 'rgb(253,174,97)', 'rgb(255,255,191)'].reverse()
   }
 
+
   constructor(private dataService: DataService,
               private configService: ConfigurationService,
               private schemaService: SchemaService,
@@ -62,15 +73,25 @@ export class TreemapChartComponent implements Widget, OnInit, AfterViewInit, OnD
           let arrPos = this.getTreemapAliases(this.dim+'_fixed');
           let dataTemp = [];
           let data = this.data;
-          arrPos.forEach( function(el){
-            let temp = data.find(function(element){ return element[0]==el;});
-            if(typeof temp === 'undefined') dataTemp.push([el, 0]);
-            else dataTemp.push(temp);
-          });
-          this.data = dataTemp;
           let names = this.getTreemapAliases(this.dim+'_names');
           let labels = this.getTreemapAliases(this.dim+'_labels');
           this.labelsDict = this.getTreemapAliases(this.dim+'_dict');
+          const self = this;
+          self.dataCsv = [];
+          arrPos.forEach( function(el){
+            let temp = data.find(function(element){ return element[0]==el;});
+
+            if(typeof temp === 'undefined'){
+               dataTemp.push([el, 0]);
+               self.dataCsv.push([self.labelsDict[labels[el]][1], 0])
+            }
+            else{
+               dataTemp.push(temp);
+               self.dataCsv.push([self.labelsDict[labels[el]][1], temp[1]]);
+            }
+          });
+          this.data = dataTemp;
+
           this.dataJson = buildJsonHierarchy(this.getTreemapAliases(this.dim), this.data, names, labels, this.labelsDict);
           // @ts-ignore
           if(typeof this.dataJson.children === 'undefined' || this.dataJson.children.length == 0){
@@ -109,7 +130,7 @@ export class TreemapChartComponent implements Widget, OnInit, AfterViewInit, OnD
               children.push(temp);
               temp.arrOriginal.forEach( function(elementOriginal) { arrOriginal.push(elementOriginal); })
            }
-        }``
+        }
       });
        // if(children.length==0) return undefined;
        if(children.length==0){
@@ -269,13 +290,30 @@ export class TreemapChartComponent implements Widget, OnInit, AfterViewInit, OnD
 
     grandparentTitle = grandparent.append("rect")
       .attr("y", -margin.top+2)
-      .attr("width", width)
+      .attr("width", width-40)
       .attr("height", margin.top);
 
     grandparent.append("text")
       .attr("x", 6)
       .attr("y", -margin.top*0.3+2)
       .attr("font-size", margin.top*0.6);
+
+    // Button CSV
+    const csvButton = svg.append("g")
+        .attr("class", "button-treemap")
+        .attr("height", margin.top);
+    csvButton.append("rect")
+        .attr("x", width - 60)
+        .attr("y", -margin.top+2)
+        .attr("width", 60)
+        .attr("height", margin.top);
+    csvButton.append("text")
+        .attr("x", width - 28 - margin.top*0.5)
+        .attr("y", -margin.top*0.3+2)
+        .attr("font-size",margin.top*0.6)
+        .text("CSV");
+     // csvButton.select("text");
+    csvButton.on("click", generateCSV);
 
     treemap = d3.treemap()
       .tile(d3.treemapResquarify.ratio(height / width * 0.5 * (1 + Math.sqrt(5))))
@@ -566,6 +604,27 @@ export class TreemapChartComponent implements Widget, OnInit, AfterViewInit, OnD
      if(self.selectedElts.length>0){
         grandparentTitle.style("fill", "#4CAF50");
      }
+
+     function generateCSV(){
+        // The struct was created at read schema service
+        let csvData = self.dim+',value\r\n';
+        self.dataCsv.forEach(function(e){
+           csvData += '"' + String(e[0]) + '"' + ',' + String(e[1])+'\r\n'
+        });
+        let blob = new Blob(['\ufeff' + csvData], { type: 'text/csv;charset=utf-8;' });
+        let dwldLink = document.createElement("a");
+        let url = URL.createObjectURL(blob);
+        let isSafariBrowser = navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1;
+        if (isSafariBrowser) {  //if Safari open in new window to save file with random filename.
+           dwldLink.setAttribute("target", "_blank");
+        }
+        dwldLink.setAttribute("href", url);
+        dwldLink.setAttribute("download", self.dim + ".csv");
+        dwldLink.style.visibility = "hidden";
+        document.body.appendChild(dwldLink);
+        dwldLink.click();
+        document.body.removeChild(dwldLink);
+     }
   }
 
   ngAfterViewInit() {
@@ -577,3 +636,4 @@ export class TreemapChartComponent implements Widget, OnInit, AfterViewInit, OnD
     window.removeEventListener('resize', this.loadWidget);
   }
 }
+

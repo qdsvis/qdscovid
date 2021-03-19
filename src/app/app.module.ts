@@ -49,7 +49,7 @@ import { ThemeModule } from './@theme/theme.module';
 import {
    NbButtonModule,
    NbCardModule,
-   NbChatModule,
+   NbChatModule, NbContextMenuModule,
    NbDatepickerModule,
    NbDialogModule, NbIconModule, NbInputModule,
    NbLayoutModule,
@@ -148,63 +148,64 @@ export function configProviderFactory2(provider: GeoDataService) {
       ModalOverlaysModule,
       NbInputModule,
       DragulaModule,
-		NbAuthModule.forRoot({
-			strategies: [
-				NbPasswordAuthStrategy.setup({
-					name: 'email',
+      NbAuthModule.forRoot({
+         strategies: [
+            NbPasswordAuthStrategy.setup({
+               name: 'email',
 
                baseEndpoint: 'api_auth',
-					login: {
+               login: {
                   endpoint: '/login',
                   method: 'post',
-               	redirect: {
-               		success: '/',
-               		failure: null,
-               	},
-             	},
-					register: {
+                  redirect: {
+                     success: '/',
+                     failure: null,
+                  },
+               },
+               register: {
                   endpoint: '/register',
                   method: 'post',
-              		redirect: {
-               		success: 'auth/login',
-            			failure: null,
-            		},
-             	},
+                  redirect: {
+                     success: 'auth/login',
+                     failure: null,
+                  },
+               },
                logout: {
                   endpoint: '/logout',
                   method: 'post',
-              		redirect: {
-               		success: 'auth/login',
-            			failure: null,
-            		},
+                  redirect: {
+                     success: 'auth/login',
+                     failure: null,
+                  },
                },
-					token: {
-						class: NbAuthJWTToken,
-						key: 'token',
-					},
-				}),
-			],
-			forms: {
+               token: {
+                  class: NbAuthJWTToken,
+                  key: 'token',
+               },
+            }),
+         ],
+         forms: {
             login: {
                rememberMe: false,
             },
-				validation: {
-      			password: {
-        				required: true,
-        				minLength: 6,
-        				maxLength: 50,
-      			},
-      			email: {
-        				required: true,
-      			},
-      			fullName: {
-        				required: true,
-      				minLength: 4,
-      				maxLength: 50,
-      			},
-    			},
-			},
-		}),
+            validation: {
+               password: {
+                  required: true,
+                  minLength: 6,
+                  maxLength: 50,
+               },
+               email: {
+                  required: true,
+               },
+               fullName: {
+                  required: true,
+                  minLength: 4,
+                  maxLength: 50,
+               },
+            },
+         },
+      }),
+      NbContextMenuModule,
    ],
    providers: [
       SchemaService,
