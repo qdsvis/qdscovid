@@ -1154,6 +1154,37 @@ export class Demo3Component implements OnInit, AfterViewInit {
       this.setMapData();
    };
 
+   exportToCsv(){
+      const self = this;
+      let csvString = 'dimension,atributo,value,porcentagem\r\n';
+      this.widgets.forEach(function(e){
+         if (e['type'] == 'bar_categorical'){
+            let dim = e['key'];
+            let total = 0;
+            let atributo = typeof(self.dataset['aliases'][dim+'_desc']) === 'undefined'? dim : dim + '_desc';
+            e['widget']['data'].forEach(function(d){
+               total += d[1];
+            });
+            e['widget']['data'].forEach(function(d){
+               let p = (100*d[1]/total).toFixed(4);
+               csvString += '"' + dim + '","' + String(self.dataset['aliases'][atributo][d[0]]) + '"' + ',' + String(d[1])+ ',' + String(p)+'\r\n'
+            });
+         }
+      });
+      let blob = new Blob(['\ufeff' + csvString], { type: 'text/csv;charset=utf-8;' });
+      let dwldLink = document.createElement("a");
+      let url = URL.createObjectURL(blob);
+      let isSafariBrowser = navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1;
+      if (isSafariBrowser) {  //if Safari open in new window to save file with random filename.
+         dwldLink.setAttribute("target", "_blank");
+      }
+      dwldLink.setAttribute("href", url);
+      dwldLink.setAttribute("download", self.dataset['datasetLabel'] + ".csv");
+      dwldLink.style.visibility = "hidden";
+      document.body.appendChild(dwldLink);
+      dwldLink.click();
+      document.body.removeChild(dwldLink);
+   }
 
 
    initialize() {
