@@ -144,8 +144,8 @@ export class SchemaService {
             'estadoTeste',
             'resultadoTeste',
             'evolucaoCaso',
-            'classificacaoFinal'],
-         'graphics_large': ['sintomas'],
+            'classificacaoFinal', 'sintomas'],
+         'graphics_large': [],
 
          // 'temporalDimension': {'dataInicioSintomas': { 'lower': 0, 'upper': 0 }, 'dataNotificacao': { 'lower': 0, 'upper': 0 }, 'dataTeste': { 'lower': 0, 'upper': 0 }, 'dataEncerramento': { 'lower': 0, 'upper': 0 }},
          'temporalDimension': {'dataInicioSintomas': { 'lower': 0, 'upper': 0 }, 'dataNotificacao': { 'lower': 0, 'upper': 0 }},
@@ -157,9 +157,9 @@ export class SchemaService {
             'estadoTeste',
             'resultadoTeste',
             'evolucaoCaso',
-            // 'sintomas',
+            'sintomas',
             'classificacaoFinal'],
-         'treemapCategoricalDimension': ['sintomas'], // [],
+         'treemapCategoricalDimension': [], // ['sintomas'],
          'payloads': ['weight', 'height'],
          'payloadValues': {
             'weight': {
@@ -210,8 +210,10 @@ export class SchemaService {
                'Confirmado por criterio clínico', 'Confirmação Laboratorial', 'Síndrome gripal não especificada', 'NA'],
             "classificacaoFinal": ['Desc.', 'Cli.-Img.', 'Cli.-Epid.', 'Cri. Cli.', 'Lab.', 'SGNE', 'NA'],
             "sintomas_label": "Sintomas",
-            "sintomas_desc": ['Assint.', 'Coriza', 'Dif. de resp.', 'Dispneia', 'Dist. Gusta.', 'Dist. Olfa.', 'Dor de cab.', 'Dor de Garg.', 'Febre', 'Outros', 'Tosse', 'NA'],
-            "sintomas": ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
+            // "sintomas": ['ASSINT', 'CORIZA', 'DIF_RES', 'DISPNEIA', 'DIS_GUSTA', 'DIS_OLFA', 'DOR_CABE', 'DOR_GARG', 'FEBRE', 'OUTROS', 'TOSSE', 'NA'],
+            "sintomas": ['ASSI', 'CORI', 'D_RES', 'DISP', 'D_GUS', 'D_OLF', 'D_CAB', 'D_GAR', 'FEB', 'OUTR', 'TOS', 'NA'],
+            "sintomas_desc": [ 'Asintomático', 'Coriza', 'Dificultade Respiratória', 'Dispneia', 'Dist. Gusta.',
+               'Dist. Olfa.', 'Dor de Cabeça', 'Dor de Garganta', 'Febre', 'Outros', 'Tosse', 'Inedfinido'],
             "dataInicioSintomas_label": "Data de Inicio Síntomas",
             "dataNotificacao_label": "Data de Notificação",
             "estadoNotificacaoIBGE": ['RO', 'AC', 'AM', 'RR', 'PA', 'AP', 'TO', 'MA', 'PI', 'CE', 'RN', 'PB', 'PE', 'AL', 'SE', 'BA', 'MG', 'ES', 'RJ', 'SP', 'PR', 'SC', 'RS', 'MS', 'MT', 'GO', 'DF', 'NA'],
@@ -227,27 +229,27 @@ export class SchemaService {
                '5207352', '5207402', '5207501', '5207535', '5207600', '5207808', '5207907', '5208004', '5208103', '5208152', '5208301', '5208400', '5208509', '5208608', '5208707', '5208806', '5208905', '5209101', '5209150', '5209200', '5209291', '5209408', '5209457', '5209606', '5209705', '5209804', '5209903', '5209937', '5209952', '5210000', '5210109', '5210158', '5210208', '5210307', '5210406', '5210562', '5210604', '5210802', '5210901', '5211008', '5211206', '5211305', '5211404', '5211503', '5211602', '5211701', '5211800', '5211909', '5212006', '5212055', '5212105', '5212204', '5212253', '5212303', '5212501', '5212600', '5212709', '5212808', '5212907', '5212956', '5213004', '5213053', '5213087', '5213103', '5213400', '5213509', '5213707', '5213756', '5213772', '5213806', '5213855', '5213905', '5214002', '5214051', '5214101', '5214408', '5214507', '5214606', '5214705', '5214804', '5214838', '5214861', '5214879', '5214903', '5215009', '5215207', '5215231', '5215256', '5215306', '5215405', '5215504', '5215603', '5215652', '5215702', '5215801', '5215900', '5216007', '5216304', '5216403', '5216452', '5216809', '5216908', '5217104', '5217203', '5217302', '5217401', '5217609', '5217708', '5218003', '5218052', '5218102', '5218300', '5218391', '5218508', '5218607', '5218706', '5218789', '5218805', '5218904', '5219001', '5219100', '5219209', '5219258', '5219308', '5219357', '5219407', '5219456', '5219506', '5219605', '5219704', '5219712', '5219738', '5219753', '5219803', '5219902', '5220009', '5220058', '5220108', '5220157', '5220207', '5220264', '5220280', '5220405', '5220454', '5220504', '5220603', '5220686', '5220702', '5221007', '5221080', '5221197', '5221304', '5221403', '5221452', '5221502', '5221551', '5221577', '5221601', '5221700', '5221809', '5221858', '5221908', '5222005', '5222054', '5222203', '5222302', '5300108', 'NA']
          },
          'treemapAliases': {
-            // data[[0 20], [1 60], [2 50], [3 80], [4 66], [5 89]] (From QDS)
-            // Treemap structure sample: [[0, 1, 2, 3]] o data[sample_fixed[sample[0]] = 89
-            'sintomas': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-            // Tree map real indices data[0] sample_fixed[5, 3, 0, 1]
-            'sintomas_fixed': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-            'sintomas_labels': ['ASSINT', 'CORIZA', 'DIF_RES', 'DISPNEIA', 'DIS_GUSTA', 'DIS_OLFA', 'DOR_CABE', 'DOR_GARG', 'FEBRE', 'OUTROS', 'TOSSE', 'NA'],
-            'sintomas_names': [' Sintomas', ' sintomas', ' '],
-            'sintomas_dict': {
-               'ASSINT':['ASSINT','Asintomático'],
-               'CORIZA':['CORIZA','Coriza'],
-               'DIF_RES':['DIF_RES','Dificultade Respiratória'],
-               'DISPNEIA':['DISPNEIA','Dispneia'],
-               'DIS_GUSTA':['DIS_GUSTA','Dist. Gusta.'],
-               'DIS_OLFA':['DIS_OLFA','Dist. Olfa.'],
-               'DOR_CABE':['DOR_CABE','Dor de Cabeça'],
-               'DOR_GARG':['DOR_GARG','Dor de Garganta'],
-               'FEBRE':['FEBRE','Febre'],
-               'OUTROS':['OUTROS','Outros'],
-               'TOSSE':['TOSSE','Tosse'],
-               'NA':['NA','Inedfinido']
-            }
+            // // data[[0 20], [1 60], [2 50], [3 80], [4 66], [5 89]] (From QDS)
+            // // Treemap structure sample: [[0, 1, 2, 3]] o data[sample_fixed[sample[0]] = 89
+            // 'sintomas': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+            // // Tree map real indices data[0] sample_fixed[5, 3, 0, 1]
+            // 'sintomas_fixed': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+            // 'sintomas_labels': ['ASSINT', 'CORIZA', 'DIF_RES', 'DISPNEIA', 'DIS_GUSTA', 'DIS_OLFA', 'DOR_CABE', 'DOR_GARG', 'FEBRE', 'OUTROS', 'TOSSE', 'NA'],
+            // 'sintomas_names': [' Sintomas', ' sintomas', ' '],
+            // 'sintomas_dict': {
+            //    'ASSINT':['ASSINT','Asintomático'],
+            //    'CORIZA':['CORIZA','Coriza'],
+            //    'DIF_RES':['DIF_RES','Dificultade Respiratória'],
+            //    'DISPNEIA':['DISPNEIA','Dispneia'],
+            //    'DIS_GUSTA':['DIS_GUSTA','Dist. Gusta.'],
+            //    'DIS_OLFA':['DIS_OLFA','Dist. Olfa.'],
+            //    'DOR_CABE':['DOR_CABE','Dor de Cabeça'],
+            //    'DOR_GARG':['DOR_GARG','Dor de Garganta'],
+            //    'FEBRE':['FEBRE','Febre'],
+            //    'OUTROS':['OUTROS','Outros'],
+            //    'TOSSE':['TOSSE','Tosse'],
+            //    'NA':['NA','Inedfinido']
+            // }
 
          }
       },
@@ -261,7 +263,7 @@ export class SchemaService {
          'color': 'ryw',
 
          'datasetName': 'qdscovid_conditions',
-         'datasetLabel': 'Data por Condições',
+         'datasetLabel': 'Dados por Condições',
          'timeStep': 86400,
 
          'identifier': 'track_id',
@@ -276,8 +278,8 @@ export class SchemaService {
             'estadoTeste',
             'resultadoTeste',
             'evolucaoCaso',
-            'classificacaoFinal'],
-         'graphics_large': ['condicoes'],
+            'classificacaoFinal', 'condicoes'],
+         'graphics_large': [],
 
          // 'temporalDimension': {'dataInicioSintomas': { 'lower': 0, 'upper': 0 }, 'dataNotificacao': { 'lower': 0, 'upper': 0 }, 'dataTeste': { 'lower': 0, 'upper': 0 }, 'dataEncerramento': { 'lower': 0, 'upper': 0 }},
          'temporalDimension': {'dataInicioSintomas': { 'lower': 0, 'upper': 0 }, 'dataNotificacao': { 'lower': 0, 'upper': 0 }},
@@ -289,9 +291,9 @@ export class SchemaService {
             'estadoTeste',
             'resultadoTeste',
             'evolucaoCaso',
-            // 'condicoes',
+            'condicoes',
             'classificacaoFinal'],
-         'treemapCategoricalDimension': ['condicoes'], // [],
+         'treemapCategoricalDimension': [], // ['condicoes'],
          'payloads': ['weight', 'height'],
          'payloadValues': {
             'weight': {
@@ -345,7 +347,8 @@ export class SchemaService {
             "condicoes_desc": ['Diabetes', 'Doenças cardíacas crônicas', 'Doenças renais crônicas em estágio avançado (graus 3, 4 e 5)',
                'Doenças respiratórias crônicas descompensadas', 'Gestante', 'Imunossupressão',
                'Obesidade', 'Portador de doenças cromossômicas ou estado de fragilidade imunológica', 'Puérpera (até 45 dias do parto)', 'Outros'],
-            "condicoes": ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+            // "condicoes": ['DIAB', 'DOE_CARD', 'DOE_REN', 'DOE_RESP', 'GEST', 'IMUNO', 'OBES', 'DOE_CROMO', 'PUER', 'OUTROS'],
+            "condicoes": ['DIAB', 'D_CAR', 'D_REN', 'D_RES', 'GEST', 'IMUN', 'OBES', 'D_CRO', 'PUER', 'OUTR'],
             "dataInicioSintomas_label": "Data de Inicio Síntomas",
             "dataNotificacao_label": "Data de Notificação",
             "estadoNotificacaoIBGE": ['RO', 'AC', 'AM', 'RR', 'PA', 'AP', 'TO', 'MA', 'PI', 'CE', 'RN', 'PB', 'PE', 'AL', 'SE', 'BA', 'MG', 'ES', 'RJ', 'SP', 'PR', 'SC', 'RS', 'MS', 'MT', 'GO', 'DF', 'NA'],
@@ -361,7 +364,7 @@ export class SchemaService {
                '5207352', '5207402', '5207501', '5207535', '5207600', '5207808', '5207907', '5208004', '5208103', '5208152', '5208301', '5208400', '5208509', '5208608', '5208707', '5208806', '5208905', '5209101', '5209150', '5209200', '5209291', '5209408', '5209457', '5209606', '5209705', '5209804', '5209903', '5209937', '5209952', '5210000', '5210109', '5210158', '5210208', '5210307', '5210406', '5210562', '5210604', '5210802', '5210901', '5211008', '5211206', '5211305', '5211404', '5211503', '5211602', '5211701', '5211800', '5211909', '5212006', '5212055', '5212105', '5212204', '5212253', '5212303', '5212501', '5212600', '5212709', '5212808', '5212907', '5212956', '5213004', '5213053', '5213087', '5213103', '5213400', '5213509', '5213707', '5213756', '5213772', '5213806', '5213855', '5213905', '5214002', '5214051', '5214101', '5214408', '5214507', '5214606', '5214705', '5214804', '5214838', '5214861', '5214879', '5214903', '5215009', '5215207', '5215231', '5215256', '5215306', '5215405', '5215504', '5215603', '5215652', '5215702', '5215801', '5215900', '5216007', '5216304', '5216403', '5216452', '5216809', '5216908', '5217104', '5217203', '5217302', '5217401', '5217609', '5217708', '5218003', '5218052', '5218102', '5218300', '5218391', '5218508', '5218607', '5218706', '5218789', '5218805', '5218904', '5219001', '5219100', '5219209', '5219258', '5219308', '5219357', '5219407', '5219456', '5219506', '5219605', '5219704', '5219712', '5219738', '5219753', '5219803', '5219902', '5220009', '5220058', '5220108', '5220157', '5220207', '5220264', '5220280', '5220405', '5220454', '5220504', '5220603', '5220686', '5220702', '5221007', '5221080', '5221197', '5221304', '5221403', '5221452', '5221502', '5221551', '5221577', '5221601', '5221700', '5221809', '5221858', '5221908', '5222005', '5222054', '5222203', '5222302', '5300108', 'NA']
          },
          'treemapAliases': {
-            'condicoes': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+            /*'condicoes': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
             'condicoes_fixed': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
             'condicoes_labels': ['DIAB', 'DOE_CARD', 'DOE_REN', 'DOE_RESP', 'GEST', 'IMUNO', 'OBES', 'DOE_CROMO', 'PUER', 'OUTROS'],
             'condicoes_names': [' Condições', ' condições', ' '],
@@ -376,7 +379,7 @@ export class SchemaService {
                'DOE_CROMO':['DOE_CROMO','Doenças cromossômicas/Est. fragilidade imun.'],
                'PUER':['PUER','Puérpera'],
                'OUTROS':['OUTROS','Outros'],
-            }
+            }*/
 
          }
       },
