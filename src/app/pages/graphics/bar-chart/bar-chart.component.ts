@@ -328,7 +328,8 @@ export class BarChartComponent implements Widget, OnInit, AfterViewInit, OnDestr
          yDomain[0] -= (Math.abs(yDomain[0]) * 0.10);
       }
 
-      yDomain[0] = Math.max(yDomain[0], 0);
+      // yDomain[0] = Math.max(yDomain[0], 0);
+      yDomain[0] = 0;
 
       // scale the range of the data
       x.domain(this.getAliases());
