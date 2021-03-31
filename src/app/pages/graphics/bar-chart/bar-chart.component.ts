@@ -33,18 +33,15 @@ export class BarChartComponent implements Widget, OnInit, AfterViewInit, OnDestr
    maxCount = 0;
    countCallbacks: any[] = [];
    maxCountCallbacks: any[] = [];
+   horizontal = false;
 
    xLabel = '';
    yLabel = '';
    yFormat = d3.format('.2s');
 
    range_map = {
-      //'normal': ['#ffffd9','#edf8b1','#c7e9b4','#7fcdbb','#41b6c4','#1d91c0','#225ea8','#253494','#081d58'],
       'category10': ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'],
-      // 'category10': ['#FFD05D', '#FFA85E', '#FF826C', '#EF637D', '#CA4F8C', '#A15498', '#845798','#685893', '#455581', '#2F4858'],
-      // 'category10': ['#FFD05D', '#FF826C', '#F2827B', '#EF637D', '#C75E94', '#A15498', '#A273B6', '#685893', '#455581', '#2F4858'],
       'category20': ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c', '#98df8a', '#d62728', '#ff9896', '#9467bd', '#c5b0d5', '#8c564b', '#c49c94' , '#e377c2', '#f7b6d2', '#7f7f7f', '#c7c7c7', '#bcbd22', '#dbdb8d', '#17becf', '#9edae5'],
-      // 'category20': ['#FFD05D', '#FFA85E', '#FF826C', '#FE8A7F', '#F2827B', '#F37686', '#EF637D', '#CA4F8C', '#C75E94', '#C36196', '#A15498', '#9768AB', '#A273B6', '#845798', '#685893', '#505A7D', '#455581', '#3E5477', '#2F4858'],
       'category20c': ['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#756bb1', '#9e9ac8', '#bcbddc', '#dadaeb', '#636363', '#969696', '#bdbdbd', '#d9d9d9'],
       'outlier': ['rgb(215,25,28)', 'rgb(253,174,97)', 'rgb(255,255,191)'].reverse()
    };
@@ -89,30 +86,11 @@ export class BarChartComponent implements Widget, OnInit, AfterViewInit, OnDestr
       this.subject.subscribe(term => {
          this.dataService.query(term).subscribe(data => {
             this.data = data[0];
-            if (this.haveMinSlider) {
-               this.hiddenKeys = [];
-               this.maxCount = this.data.length;
-               this.data = this.data.filter(element => {
-                  const self = this;
-                  if (element[1] >= self.minValue && element[1] < self.maxValue) {
-                     return true;
-                  }
-                  else {
-                     return false;
-                  }
-               });
-               this.count = this.data.length;
-               if (this.data.length > 200) {
-                  this.data = this.data.slice(0, 200);
-               }
-               for (var i = 0; i < this.data.length; i++ ) {
-                  this.hiddenKeys.push(this.data[i][0]);
-               }
-               for (var i = 0; i < this.data.length; i++ ) {
-                  this.data[i][0] = i;
-               }
+            if (this.horizontal === true){
+               this.loadWidgetHorizontal();
+            } else {
+               this.loadWidget();
             }
-            this.loadWidget();
          });
       });
    }
@@ -161,6 +139,10 @@ export class BarChartComponent implements Widget, OnInit, AfterViewInit, OnDestr
 
    setHaveMinSlider(haveMinSlider: boolean) {
       this.haveMinSlider = haveMinSlider;
+   }
+
+   setHorizontal(horizontal: boolean) {
+      this.horizontal = horizontal;
    }
 
    setSelectedElts(selected) {
@@ -236,32 +218,52 @@ export class BarChartComponent implements Widget, OnInit, AfterViewInit, OnDestr
    }
 
    getAliases() {
-      if (!this.haveMinSlider) {
-         return this.dataset.aliases[this.dim];
-      }
-      var aliases = [];
-      for (var i = 0; i < this.dataset.aliases[this.dim].length; i++) {
-         if (this.hiddenKeys.includes(i)) {
-            aliases.push(this.dataset.aliases[this.dim][i]);
+      const self = this;
+      const aliases = this.dataset.aliases[this.dim];
+
+      if (this.horizontal === true){
+         const new_aliases = [];
+         for (let i = 0; i < this.data.length; i++){
+            new_aliases.push(aliases[this.data[i][0]]);
          }
+         aliases.forEach(function (e){
+            if (new_aliases.includes(e) === false){
+               new_aliases.splice(0, 0, e);
+               // self.data.splice(0, 0, [100000, 0]);
+               // new_aliases.push(e);
+            }
+
+         });
+         return new_aliases;
+      } else {
+         return aliases;
       }
-      return aliases;
    }
 
    getAliasesDesc() {
+      const self = this;
       if (this.dataset.aliases[this.dim + "_desc"] == undefined) {
          return this.getAliases();
-      }
-      if (!this.haveMinSlider) {
-         return this.dataset.aliases[this.dim + "_desc"];
-      }
-      var aliases = [];
-      for (var i = 0; i < this.dataset.aliases[this.dim + "_desc"].length; i++) {
-         if (this.hiddenKeys.includes(i)) {
-            aliases.push(this.dataset.aliases[this.dim + "_desc"][i]);
+      } else{
+         const aliases = this.dataset.aliases[this.dim + "_desc"];
+         if (this.horizontal === true){
+            const new_aliases = [];
+            for (let i = 0; i < this.data.length; i++){
+
+               new_aliases.push(aliases[this.data[i][0]]);
+            }
+            aliases.forEach(function (e){
+               if (new_aliases.includes(e) === false){
+                  // new_aliases.push(e);
+                  new_aliases.splice(0, 0, e);
+                  // self.data.splice(0, 0, [100000, 0]);
+               }
+            });
+            return new_aliases;
+         } else {
+            return aliases;
          }
       }
-      return aliases;
    }
 
    loadTable() {
@@ -548,6 +550,232 @@ export class BarChartComponent implements Widget, OnInit, AfterViewInit, OnDestr
       self.loadTable();
    };
 
+
+   loadWidgetHorizontal = () => {
+      const self = this;
+      let container = (d3.select('#' + this.uniqueId).node() as any);
+
+      if (container == (undefined || null) || container.parentNode == (undefined || null)) {
+         return;
+      }
+      container = container.parentNode.getBoundingClientRect();
+      const margin = { top: 5, right: 5, bottom: 35, left: 35 };
+      const width = container.width - margin.left - margin.right;
+      const height = container.height - margin.top - margin.bottom;
+      if(width<10) return;
+
+      this.data = <[[number, number]]>this.data.sort((lhs, rhs) => {
+         return lhs[1] - rhs[1];
+      });
+
+      // set the ranges
+      const y = d3.scaleBand()
+         .padding(0.025);
+
+         // x.range([0, width]);
+         y.range([height, 0]);
+
+      const x = d3.scaleLinear<number, number>()
+         .range([0, width]);
+         // .range([height, 0]);
+
+      d3.select('#' + this.uniqueId).selectAll('*').remove();
+
+      const svg = d3.select('#' + this.uniqueId)
+         .append('svg')
+         .attr('viewBox', '0 0 ' + container.width + ' ' + container.height)
+         .attr('class', 'eh-graph-categorical-inside')
+         .append('g')
+         .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+      let defs = svg.append('svg').attr('width', 0).attr('height', 0).append('defs');
+      defs.append('clipPath').attr('id', 'clipper').append('rect').attr('x', 0).attr('y', 0).attr('width', width).attr('height', height);
+
+      let defs_x = svg.append('svg').attr('width', 0).attr('height', 0).append('defs');
+      defs_x.append('clipPath').attr('id', 'clipper_x').append('rect').attr('x', 0).attr('y', height).attr('width', width).attr('height', margin.bottom);
+
+      let xDomain = d3.extent<number, number>(this.data, (d) => d[1]);
+      xDomain[0] = 0;
+
+      // scale the range of the data
+      y.domain(this.getAliases());
+      x.domain(xDomain);
+
+      let colorScale;
+      let colorDomain = [];
+      for (var i = 0; i < this.data.length; i++ ) {
+         // colorDomain[i] = this.data[i][0];
+         colorDomain[i] = i;
+      }
+      if (this.getAliases().length <= 10) {
+         colorScale = d3.scaleOrdinal()
+            .domain(colorDomain)
+            .range(this.range_map.category10);
+      }
+      else {
+         colorScale = d3.scaleOrdinal()
+            .domain(colorDomain)
+            .range(this.range_map.category20);
+      }
+
+      let getColor = (d) => {
+         if (self.getSelectedEltsIfExist().find((elt) => elt === d[0]) !== undefined) {
+            return d3.rgb(colorScale(d[0]));
+         }
+         else {
+            if (self.selectedElts.length !== 0) {
+               // return d3.rgb(colorScale(d[0])).brighter(0.9);
+               return d3.rgb('lightgray');
+            }
+            else {
+               return d3.rgb(colorScale(d[0]));
+            }
+         }
+      };
+
+      const tooltip = d3.select('#' + this.uniqueId).append('div')
+         .attr('class', 'tooltip')
+         .style('opacity', 0);
+
+      let svg_data = svg.append('g').attr('clip-path', 'url(#clipper)');
+
+      let it = this.getAliases().length - this.data.length;
+      let acumulatedSum = 0;
+      this.data.forEach(function (e){
+         e.push(it);
+         it++;
+         acumulatedSum += e[1];
+      });
+      if(this.dim == 'idade'){
+         console.log(...this.data);
+      }
+      // Tooltip on background
+      svg_data.selectAll('bar')
+         .data(this.data)
+         .enter().append('rect')
+         .attr('fill', '#FFFFFF')
+         .attr('y', d => y(this.getAliases()[d[2]]))
+         .attr('height', y.bandwidth())
+         .attr('x', 0)
+         .attr('width', width)
+         .attr('class', 'group_bar')
+         .on('mouseover', function (d) {
+            if (self.getSelectedEltsIfExist().find((elt) => elt === d[0]) !== undefined) {
+               d3.select(this).attr('fill', d3.rgb('#FFFFFF').darker(0.2).toString());
+            } else {
+               d3.select(this).attr('fill', d3.rgb('#FFFFFF').darker(0.2).toString());
+            }
+            tooltip.transition().duration(200).style('opacity', 0.95);
+            tooltip.html(`${self.dim}: <span>${(self.getAliasesDesc()[d[2]])}</span><br>value: <span>${d3.format(",")(d[1])}</span>`)
+               .style('left', `${d3.event.layerX - 120 * (d[0] / self.data.length)}px`)
+               .style('top', `${d3.event.layerY-10}px`);
+         })
+         .on('mouseout', function (d) {
+            d3.select(this).attr('fill', '#ffffff');
+            tooltip.transition().duration(500).style('opacity', 0);
+         })
+         .on('click', function (d) {
+            let found = self.selectedElts.find(el => el === d[0]) !== undefined;
+            if (found) {
+               self.selectedElts = self.selectedElts.filter(el => el !== d[0]);
+               self.removeLabel(d[0]);
+            }
+            else {
+               self.selectedElts.push(d[0]);
+               self.addLabel(d[0], self.getAliasesDesc()[d[0]], self);
+            }
+            // broadcast
+            self.broadcast();
+         });
+
+      svg_data.selectAll('bar')
+         .data(this.data)
+         .enter().append('rect')
+         .attr('fill', (d) => {
+            let color = getColor(d);
+            return color.toString();
+         })
+         .attr('y', d => y(this.getAliases()[d[2]]))
+         .attr('height', y.bandwidth())
+         .attr('x', 0)
+         .attr('width', (d) => x(d[1]))
+         .attr('class', 'group_bar')
+         .on('mouseover', function (d) {
+            if (self.getSelectedEltsIfExist().find((elt) => elt === d[0]) !== undefined) {
+               d3.select(this).attr('fill', d3.rgb(colorScale(d[0])).darker(2.0).toString());
+            } else {
+               d3.select(this).attr('fill', d3.rgb(colorScale(d[0])).darker().toString());
+            }
+            tooltip.transition().duration(200).style('opacity', 0.95);
+            tooltip.html(`${self.dim}: <span>${(self.getAliasesDesc()[d[2]])}</span><br>value: <span>${d3.format(",")(d[1])}</span>`)
+               .style('left', `${d3.event.layerX - 120 * (d[0] / self.data.length)}px`)
+               .style('top', `${d3.event.layerY-10}px`);
+         })
+         .on('mouseout', function (d) {
+            d3.select(this).attr('fill', getColor(d).toString());
+            tooltip.transition().duration(500).style('opacity', 0);
+         })
+         .on('click', function (d) {
+            let found = self.selectedElts.find(el => el === d[0]) !== undefined;
+            if (found) {
+               self.selectedElts = self.selectedElts.filter(el => el !== d[0]);
+               self.removeLabel(d[0]);
+            }
+            else {
+               self.selectedElts.push(d[0]);
+               self.addLabel(d[0], self.getAliasesDesc()[d[0]], self);
+            }
+
+            // reset color
+            d3.select(this).attr('fill', getColor(d).toString());
+
+            svg.selectAll(".group_bar").attr("fill", function (d) {
+               let color = getColor(d);
+               return color.toString();
+            });
+
+            // broadcast
+            self.broadcast();
+         });
+
+      //add a value label to the right of each bar
+      svg_data.selectAll('bar')
+         .data(this.data)
+         .enter().append("text")
+         .attr('fill',(d) =>  (x(d[1]) > 0.85 * width ? '#FFFFFF': '#606060'))
+         .style('text-anchor', (d) =>  (x(d[1]) > 0.85 * width ? 'end': 'start'))
+         .style('font-size', 14)
+         // .attr("class", "label")
+         //y position of the label is halfway down the bar
+         .attr("y",  (d) => y(this.getAliases()[d[2]]) + y.bandwidth()/2 + 3)
+         //x position is 3 pixels to the right of the bar
+         .attr("x", (d) => x(d[1]) + (x(d[1]) > 0.85 * width ? -3: 3))
+         .text((d) => d3.format(".1f")(100 * (d[1]/acumulatedSum)) + '%' );
+
+      // // text label for the x axis
+      svg.append('text').attr('id', 'labelXAxis');
+      // xAxis(svg.select('.xAxis'));
+      svg.select('#labelXAxis')
+         .attr('x', (width / 2.0))
+         .attr('y', height + margin.bottom - 2)
+         .style('text-anchor', 'middle')
+         .style('font-weight', 'bold')
+         .attr('fill','#717c95')
+         .text(this.xLabel.toUpperCase());
+
+      // add the Y axis
+      const yAxis = d3.axisLeft(y)
+         .tickSize(1);
+
+      svg.append('g')
+         .call(yAxis);
+
+      self.broadcastCount();
+      self.broadcastMaxCount();
+
+      self.loadTable();
+   };
+
    addLabel(id, desc, self){
       let labelParent = d3.select('#filter'+self.dim);
       let classSpan = 'nb-badge-custom';
@@ -587,12 +815,21 @@ export class BarChartComponent implements Widget, OnInit, AfterViewInit, OnDestr
 
 
    ngAfterViewInit() {
-      window.addEventListener('resize', this.loadWidget);
-      this.loadWidget();
+      if (this.horizontal === true){
+         window.addEventListener('resize', this.loadWidgetHorizontal);
+         this.loadWidgetHorizontal();
+      } else {
+         window.addEventListener('resize', this.loadWidget);
+         this.loadWidget();
+      }
    }
 
    ngOnDestroy() {
-      window.removeEventListener('resize', this.loadWidget);
+      if (this.horizontal === true){
+         window.removeEventListener('resize', this.loadWidgetHorizontal);
+      } else {
+         window.removeEventListener('resize', this.loadWidget);
+      }
    }
 
    formatThousandsSeperator(n) {

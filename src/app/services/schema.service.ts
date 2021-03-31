@@ -53,6 +53,7 @@ export class SchemaService {
             'evolucaoCaso',
             'classificacaoFinal'],
          'treemapCategoricalDimension': [/*'ciap'*/],
+         'horizontalBarDimension':{},
          'payloads': ['weight', 'height'],
          'payloadValues': {
             'weight': {
@@ -151,15 +152,15 @@ export class SchemaService {
          'temporalDimension': {'dataInicioSintomas': { 'lower': 0, 'upper': 0 }, 'dataNotificacao': { 'lower': 0, 'upper': 0 }},
          'spatialDimension': ['coord'],
          // 'barCategoricalDimension': ['tipo_origem', 'idade', 'sexo'],
-         'barCategoricalDimension': ['sexo', 'idade',
+         'barCategoricalDimension': ['sexo', 'sintomas', 'idade',
             'profissionalSaude',
             'tipoTeste',
             'estadoTeste',
             'resultadoTeste',
             'evolucaoCaso',
-            'sintomas',
             'classificacaoFinal'],
          'treemapCategoricalDimension': [], // ['sintomas'],
+         'horizontalBarDimension':{'sintomas': true},
          'payloads': ['weight', 'height'],
          'payloadValues': {
             'weight': {
@@ -285,15 +286,15 @@ export class SchemaService {
          'temporalDimension': {'dataInicioSintomas': { 'lower': 0, 'upper': 0 }, 'dataNotificacao': { 'lower': 0, 'upper': 0 }},
          'spatialDimension': ['coord'],
          // 'barCategoricalDimension': ['tipo_origem', 'idade', 'sexo'],
-         'barCategoricalDimension': ['sexo', 'idade',
+         'barCategoricalDimension': ['sexo', 'condicoes', 'idade',
             'profissionalSaude',
             'tipoTeste',
             'estadoTeste',
             'resultadoTeste',
             'evolucaoCaso',
-            'condicoes',
             'classificacaoFinal'],
          'treemapCategoricalDimension': [], // ['condicoes'],
+         'horizontalBarDimension':{'condicoes': true},
          'payloads': ['weight', 'height'],
          'payloadValues': {
             'weight': {

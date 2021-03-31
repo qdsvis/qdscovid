@@ -1019,7 +1019,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
 
             this.bar_categorical_restrictions[this.dataset.datasetName].forEach((entry) => {
                if (entry.dimName == (<BarChartComponent>ref.widget).getDim()) {
-                  (<BarChartComponent>ref.widget).setHaveMinSlider(true);
+                  //(<BarChartComponent>ref.widget).setHaveMinSlider(true);
                   if (entry.minValue === 0) {
                      (<BarChartComponent>ref.widget).setMinValue(entry.minValue);
                   }
@@ -1248,6 +1248,9 @@ export class Demo3Component implements OnInit, AfterViewInit {
          componentInstance.register(dim, this.setBarCategoricalData);
          componentInstance.registerCount(dim, this.setCountBarCategoricalData);
          componentInstance.registerMaxCount(dim, this.setMaxCountBarCategoricalData);
+         if (typeof this.dataset.horizontalBarDimension[dim] !== 'undefined' && this.dataset.horizontalBarDimension[dim] === true){
+            componentInstance.setHorizontal(true);
+         }
 
          this.bar_categorical_restrictions[this.dataset.datasetName].forEach((entry) => {
             if (entry.dimName == dim) {
