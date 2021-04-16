@@ -87,7 +87,7 @@ export class SchemaService {
             'idade': ['<5', '<10', '<15', '<20', '<25', '<30', '<35', '<40', '<45', '<50', '<55', '<60', '<65', '<70', '<75', '<80', '<85', '<90', '>90'],
             // profissionalSaude
             'profissionalSaude_label': "Profissional de Saúde",
-            'profissionalSaude': ['Sim', 'Não'],
+            'profissionalSaude': ['Não', 'Sim'],
             // tipoTeste
             'tipoTeste_label': "Tipo de teste",
             'tipoTeste': ['RT-PCR', 'ANTICORPO', 'ANTIGENO', 'ECLIA IgG', 'ELISA IgM', 'CLIA', 'NA'],
@@ -197,7 +197,7 @@ export class SchemaService {
             'idade': ['<5', '<10', '<15', '<20', '<25', '<30', '<35', '<40', '<45', '<50', '<55', '<60', '<65', '<70', '<75', '<80', '<85', '<90', '>90'],
             // profissionalSaude
             'profissionalSaude_label': "Profissional de Saúde",
-            'profissionalSaude': ['Sim', 'Não'],
+            'profissionalSaude': ['Não', 'Sim'],
             // tipoTeste
             'tipoTeste_label': "Tipo de teste",
             // 'tipoTeste_desc': [],
@@ -329,7 +329,7 @@ export class SchemaService {
             'idade': ['<5', '<10', '<15', '<20', '<25', '<30', '<35', '<40', '<45', '<50', '<55', '<60', '<65', '<70', '<75', '<80', '<85', '<90', '>90'],
             // profissionalSaude
             'profissionalSaude_label': "Profissional de Saúde",
-            'profissionalSaude': ['Sim', 'Não'],
+            'profissionalSaude': ['Não', 'Sim'],
             // tipoTeste
             'tipoTeste_label': "Tipo de teste",
             // 'tipoTeste_desc': [],
