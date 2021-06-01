@@ -48,10 +48,10 @@ import { DOCUMENT } from "@angular/common";
 
 First, build:
 
-`ng build --base-href https://covid19.ufrgs.dev/qdscovid/`
+`ng build --base-href http://www.qdsvis.tk/qdscovid/`
 
 Then, pass the files generated to page of the project:
 
 `ngh --branch=page`
 
-Finally, open the page in a browser: [Link](https://covid19.ufrgs.dev/qdscovid)
+Finally, open the page in a browser: [Link](http://www.qdsvis.tk/qdscovid)
