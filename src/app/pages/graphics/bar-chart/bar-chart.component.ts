@@ -229,13 +229,11 @@ export class BarChartComponent implements Widget, OnInit, AfterViewInit, OnDestr
          aliases.forEach(function (e){
             if (new_aliases.includes(e) === false){
                new_aliases.splice(0, 0, e);
-               // self.data.splice(0, 0, [100000, 0]);
-               // new_aliases.push(e);
             }
-
          });
          return new_aliases;
-      } else {
+      }
+      else {
          return aliases;
       }
    }
@@ -244,7 +242,8 @@ export class BarChartComponent implements Widget, OnInit, AfterViewInit, OnDestr
       const self = this;
       if (this.dataset.aliases[this.dim + "_desc"] == undefined) {
          return this.getAliases();
-      } else{
+      }
+      else{
          const aliases = this.dataset.aliases[this.dim + "_desc"];
          if (this.horizontal === true){
             const new_aliases = [];
@@ -254,13 +253,12 @@ export class BarChartComponent implements Widget, OnInit, AfterViewInit, OnDestr
             }
             aliases.forEach(function (e){
                if (new_aliases.includes(e) === false){
-                  // new_aliases.push(e);
                   new_aliases.splice(0, 0, e);
-                  // self.data.splice(0, 0, [100000, 0]);
                }
             });
             return new_aliases;
-         } else {
+         }
+         else {
             return aliases;
          }
       }
@@ -646,9 +644,7 @@ export class BarChartComponent implements Widget, OnInit, AfterViewInit, OnDestr
          it++;
          acumulatedSum += e[1];
       });
-      if(this.dim == 'idade'){
-         console.log(...this.data);
-      }
+
       // Tooltip on background
       svg_data.selectAll('bar')
          .data(this.data)
@@ -682,7 +678,7 @@ export class BarChartComponent implements Widget, OnInit, AfterViewInit, OnDestr
             }
             else {
                self.selectedElts.push(d[0]);
-               self.addLabel(d[0], self.getAliasesDesc()[d[0]], self);
+               self.addLabel(d[0], self.getAliasesDesc()[d[2]], self);
             }
             // broadcast
             self.broadcast();
@@ -723,7 +719,7 @@ export class BarChartComponent implements Widget, OnInit, AfterViewInit, OnDestr
             }
             else {
                self.selectedElts.push(d[0]);
-               self.addLabel(d[0], self.getAliasesDesc()[d[0]], self);
+               self.addLabel(d[0], self.getAliasesDesc()[d[2]], self);
             }
 
             // reset color

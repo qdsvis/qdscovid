@@ -1249,7 +1249,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
          componentInstance.register(dim, this.setBarCategoricalData);
          componentInstance.registerCount(dim, this.setCountBarCategoricalData);
          componentInstance.registerMaxCount(dim, this.setMaxCountBarCategoricalData);
-         if (typeof this.dataset.horizontalBarDimension[dim] !== 'undefined' && this.dataset.horizontalBarDimension[dim] === true){
+         if (typeof this.dataset.horizontalBarDimension[dim] !== 'undefined' && this.dataset.horizontalBarDimension[dim] === true) {
             componentInstance.setHorizontal(true);
          }
 
