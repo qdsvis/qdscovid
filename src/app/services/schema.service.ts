@@ -24,6 +24,7 @@ export class SchemaService {
 
          'datasetName': 'qdscovid_registers',
          'datasetLabel': 'Dados por registro',
+         'registersLabel': 'Registros',
          'timeStep': 86400,
 
          'identifier': 'track_id',
@@ -146,6 +147,7 @@ export class SchemaService {
 
          'datasetName': 'qdscovid_symptoms',
          'datasetLabel': 'Dados por Sintomas',
+         'registersLabel': 'Sintomas',
          'timeStep': 86400,
 
          'identifier': 'track_id',
@@ -286,6 +288,7 @@ export class SchemaService {
 
          'datasetName': 'qdscovid_conditions',
          'datasetLabel': 'Dados por Condições',
+         'registersLabel': 'Condições',
          'timeStep': 86400,
 
          'identifier': 'track_id',
@@ -425,7 +428,8 @@ export class SchemaService {
          let obj: any;
          if (dataset !== undefined) {
             obj = this.datasets[dataset];
-         } else {
+         }
+         else {
             obj = this.datasets[this.config.defaultDataset];
          }
          return obj;

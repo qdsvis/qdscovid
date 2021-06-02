@@ -107,6 +107,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
    private marker: Marker;
 
    dataset: any;
+   registersLabel: string;
 
    options: FormGroup;
 
@@ -822,11 +823,11 @@ export class Demo3Component implements OnInit, AfterViewInit {
             zIndex: 1000
          });
 
-         let overlay_maps = {
-            "Atendimentos": agiradom,
-            "População": map_population,
-            "Densidade": map_density
-         };
+         let overlay_maps = {}
+
+         overlay_maps[this.registersLabel] = agiradom
+         overlay_maps["População"] = map_population
+         overlay_maps["Densidade"] = map_density
 
          if (this.layersControl) this.layersControl.remove(this.mapService.map);
          this.layersControl = L.control.layers(overlay_maps, null, {
@@ -1781,6 +1782,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
                this.preInitialize();
             }
             this.dataset = this.schemaService.get(param);
+            this.registersLabel = this.dataset.registersLabel
             this.initialize();
          }
          else {

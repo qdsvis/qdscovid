@@ -45,7 +45,7 @@
                                  <span class="nb-badge-custom">Nome:</span>{{ info_name }}
                               </section>
                               <section *ngIf="health.visible || density.visible">
-                                 <span class="nb-badge-custom">Atendimentos:</span>{{ formatThousandsSeperator(info_events[0]) }} - {{ formatThousandsSeperator(info_events[1]) }}
+                                 <span class="nb-badge-custom">{{ this.registersLabel }}:</span>{{ formatThousandsSeperator(info_events[0]) }} - {{ formatThousandsSeperator(info_events[1]) }}
                               </section>
                               <section *ngIf="population.visible || density.visible">
                                  <span class="nb-badge-custom">População:</span>{{ formatThousandsSeperator(info_pop[0]) }} - {{ formatThousandsSeperator(info_pop[1]) }}
