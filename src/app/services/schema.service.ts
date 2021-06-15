@@ -119,9 +119,9 @@ export class SchemaService {
                'Confirmado por critério clínico', 'Confirmado Laboratorial', 'Síndrome gripal não especificada', 'NA'],
             "classificacaoFinal": ['Desc.', 'Clí. Img.', 'Clí. Epid.', 'Cri. Cli.', 'Lab.', 'SGNE', 'NA'],
             // dataInicioSintomas
-            "dataInicioSintomas_label": "Data de Inicio Sintomas",
+            "dataInicioSintomas_label": "Data do início dos sintomas",
             // dataNotificacao
-            "dataNotificacao_label": "Data de Notificação",
+            "dataNotificacao_label": "Data da Notificação",
             // estadoIBGE
             "estadoIBGE": ['RO', 'AC', 'AM', 'RR', 'PA', 'AP', 'TO', 'MA', 'PI', 'CE', 'RN', 'PB', 'PE', 'AL', 'SE', 'BA', 'MG', 'ES', 'RJ', 'SP', 'PR', 'SC', 'RS', 'MS', 'MT', 'GO', 'DF', 'NA'],
             // "estadoIBGE": ['11', '12', '13', '14', '15', '16', '17', '21', '22', '23', '24', '25', '26', '27', '28', '29', '31', '32', '33', '35', '41', '42', '43', '50', '51', '52', '53', 'undefined'],
@@ -233,13 +233,13 @@ export class SchemaService {
                'Confirmado por critério clínico', 'Confirmado Laboratorial', 'Síndrome gripal não especificada', 'NA'],
             "classificacaoFinal": ['Desc.', 'Clí. Img.', 'Clí. Epid.', 'Cri. Cli.', 'Lab.', 'SGNE', 'NA'],
             // dataInicioSintomas
-            "dataInicioSintomas_label": "Data de Inicio Sintomas",
+            "dataInicioSintomas_label": "Data do início dos sintomas",
             // dataNotificacao
-            "dataNotificacao_label": "Data de Notificação",
+            "dataNotificacao_label": "Data da Notificação",
             // sintomas
             "sintomas_label": "Sintomas",
             "sintomas_desc": ['Dor de Garganta', 'Dispneia', 'Febre', 'Tosse', 'Dor de Cabeça', 'Distúrbios Gustativos', 'Distúrbios Olfativos', 'Coriza', 'Assintomático', 'Dificultade Respiratória', 'Outros'],
-            "sintomas": ['D_GAR', 'DISP', 'FEB', 'TOS', 'D_CAB', 'D_GUS', 'D_OLF', 'CORI', 'ASSI', 'D_RES', 'OUTR'],
+            "sintomas": ['D. Gar', 'Disp.', 'Feb.', 'Tos.', 'D. Cab.', 'D. Gus.', 'D. Olf', 'Cor.', 'Assi.', 'D. Res.', 'Outr.'],
             // estadoIBGE
             "estadoIBGE": ['RO', 'AC', 'AM', 'RR', 'PA', 'AP', 'TO', 'MA', 'PI', 'CE', 'RN', 'PB', 'PE', 'AL', 'SE', 'BA', 'MG', 'ES', 'RJ', 'SP', 'PR', 'SC', 'RS', 'MS', 'MT', 'GO', 'DF', 'NA'],
             // "estadoIBGE": ['11', '12', '13', '14', '15', '16', '17', '21', '22', '23', '24', '25', '26', '27', '28', '29', '31', '32', '33', '35', '41', '42', '43', '50', '51', '52', '53', 'undefined'],
@@ -374,9 +374,9 @@ export class SchemaService {
                'Confirmado por critério clínico', 'Confirmado Laboratorial', 'Síndrome gripal não especificada', 'NA'],
             "classificacaoFinal": ['Desc.', 'Clí. Img.', 'Clí. Epid.', 'Cri. Cli.', 'Lab.', 'SGNE', 'NA'],
             // dataInicioSintomas
-            "dataInicioSintomas_label": "Data de Inicio Sintomas",
+            "dataInicioSintomas_label": "Data do início dos sintomas",
             // dataNotificacao
-            "dataNotificacao_label": "Data de Notificação",
+            "dataNotificacao_label": "Data da Notificação",
             // condicoes
             "condicoes_label": "Condições",
             "condicoes_desc": [
@@ -384,7 +384,7 @@ export class SchemaService {
                'Doenças renais crônicas em estágio avançado (graus 3, 4 e 5)', 'Imunossupressão',
                'Gestante', 'Portador de doenças cromossômicas ou estado de fragilidade imunológica', 'Puérpera (até 45 dias do parto)',
                'Obesidade', 'Outros'],
-            "condicoes": ['D_RES', 'D_CAR', 'DIAB', 'D_REN', 'IMUN', 'GEST', 'D_CRO', 'PUER', 'OBES', 'OUTR'],
+            "condicoes": ['D. Res.', 'D. Car.', 'Diab.', 'D. Ren.', 'Imun.', 'Gest.', 'D. Cro.', 'Puer.', 'Obes.', 'Outr.'],
             // estadoIBGE
             "estadoIBGE": ['RO', 'AC', 'AM', 'RR', 'PA', 'AP', 'TO', 'MA', 'PI', 'CE', 'RN', 'PB', 'PE', 'AL', 'SE', 'BA', 'MG', 'ES', 'RJ', 'SP', 'PR', 'SC', 'RS', 'MS', 'MT', 'GO', 'DF', 'NA'],
             // "estadoIBGE": ['11', '12', '13', '14', '15', '16', '17', '21', '22', '23', '24', '25', '26', '27', '28', '29', '31', '32', '33', '35', '41', '42', '43', '50', '51', '52', '53', 'undefined'],
