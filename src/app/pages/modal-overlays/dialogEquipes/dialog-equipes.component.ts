@@ -71,7 +71,7 @@ export class DialogEquipesComponent {
             valuePrepareFunction: (value) => { return "<div class='text-right'>" + this.formatThousandsSeperator(value) + "</div>";},
          },
          den: {
-            title: 'Densidade',
+            title: 'Densidade/1M',
             type: 'html',
             filter: false,
             sortDirection: 'desc',
@@ -198,7 +198,7 @@ export class DialogEquipesComponent {
    }
 
    formatDecimal(n) {
-      return d3.format("0.3f")(n);
+      return d3.format("0.2f")(n);
    }
 
    getKeys(map) {

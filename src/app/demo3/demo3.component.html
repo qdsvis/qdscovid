@@ -51,7 +51,7 @@
                                  <span class="nb-badge-custom">População:</span>{{ formatThousandsSeperator(info_pop[0]) }} - {{ formatThousandsSeperator(info_pop[1]) }}
                               </section>
                               <section *ngIf="density.visible">
-                                 <span class="nb-badge-custom">Densidade:</span>{{ formatDecimal(info_den[0]) }} - {{ formatDecimal(info_den[1]) }}
+                                 <span class="nb-badge-custom">Densidade/1M:</span>{{ formatThousandsSeperatorDecimal(info_den[0]) }} - {{ formatThousandsSeperatorDecimal(info_den[1]) }}
                               </section>
                            </div>
                            <div class="height-small">

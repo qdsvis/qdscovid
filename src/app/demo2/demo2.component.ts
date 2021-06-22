@@ -321,7 +321,7 @@ export class Demo2Component implements OnInit, AfterViewInit {
       }
       return domain;
    }
-	
+
 	domainOutlier([min, max, q1, q3, iqr], num) {
 		num = num + 1;
 		let domain = [];
@@ -635,7 +635,7 @@ export class Demo2Component implements OnInit, AfterViewInit {
 						q1 = this.median(densities.slice(0, densities.length / 2));
 						q3 = this.median(densities.slice(densities.length / 2));
 					}
-					
+
 					if (q1 != undefined && q3 != undefined) {
 						let iqr = q3 - q1;
 						self.geo.json_min_max_den.set(dim, [densities[0], densities[densities.length - 1], q1, q3, iqr])
@@ -671,7 +671,7 @@ export class Demo2Component implements OnInit, AfterViewInit {
 				else if (key == "curr_den") {
 					let nume = self.geo.json_value.get(dim).get(r_code.toUpperCase());
 					let deno = this.population_code(feature);
-					value = (nume == undefined) ? undefined : (nume[1] / deno);
+					value = (nume == undefined) ? undefined : ((nume[1] / deno) * 1000000);
 				}
 				let style = <any>{};
 				if (value != undefined) {
@@ -861,7 +861,7 @@ export class Demo2Component implements OnInit, AfterViewInit {
 			let overlay_maps = {
 				"Atendimentos": agiradom,
 				"População": map_population,
-				"Densidade": map_density
+				"Densidade/1M": map_density
 			};
 
 			if (this.layersControl) this.layersControl.remove(this.mapService.map);
@@ -1023,7 +1023,7 @@ export class Demo2Component implements OnInit, AfterViewInit {
 
 			this.TopDenRegionLayer.clearLayers();
 			this.TopDenRegionLayer.addData(curr_data);
-			
+
 			this.spinner.hide();
 		});
 	}
@@ -1199,7 +1199,7 @@ export class Demo2Component implements OnInit, AfterViewInit {
 				return '/const=' + this.getCurrRegion() + '.values.(' + value_region[0] + ')';
 			}
 		}
-		
+
 		let output = "";
 		let idx = 0;
 		for (const dim of this.schemaService.getGlobal()["regionCategoricalDimension"]) {

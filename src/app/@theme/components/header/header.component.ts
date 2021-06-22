@@ -166,7 +166,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
             selector: '.eh-map',
             event: 'next',
             description: 'Esta é a <b>Área do mapa interativo</b><br> A escala de cores pode ser alterada por atendimento, <br> população ou densidade (relação atendimento/população). ' +
-               '<br><br>Clique em <b>"Densidade"</b> para que a escala de cores reflita <br> a quantidade de atendimentos normalizada pela população.' +
+               '<br><br>Clique em <b>"Densidade/1M"</b> para que a escala de cores reflita <br> a quantidade de atendimentos normalizada pela população.' +
                '<br><br> Clique em <b>"Next"</b> para continuar.',
             showNext: true,
             showSkip: false

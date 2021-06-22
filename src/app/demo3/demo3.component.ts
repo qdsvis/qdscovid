@@ -550,7 +550,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
                      let nume = self.geo.json_value.get(dim).get(r_code.toUpperCase());
                      let deno = this.population_code(feature);
                      if (nume != undefined) {
-                        densities.push(nume[1] / deno);
+                        densities.push((nume[1] / deno) * 1000000);
 
                         if (deno < curr_minmax[0])
                            curr_minmax[0] = deno;
@@ -655,7 +655,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
             else if (key == "curr_den") {
                let nume = self.geo.json_value.get(dim).get(r_code.toUpperCase());
                let deno = this.population_code(feature);
-               value = (nume == undefined) ? undefined : (nume[1] / deno);
+               value = (nume == undefined) ? undefined : ((nume[1] / deno) * 1000000);
             }
             let style = <any>{};
             if (value != undefined) {
@@ -827,7 +827,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
 
          overlay_maps[this.registersLabel] = agiradom
          overlay_maps["População"] = map_population
-         overlay_maps["Densidade"] = map_density
+         overlay_maps["Densidade/1M"] = map_density
 
          if (this.layersControl) this.layersControl.remove(this.mapService.map);
          this.layersControl = L.control.layers(overlay_maps, null, {
@@ -1394,7 +1394,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
             }
          }
          this.info_pop[0] = this.getCountPop(this.getCurrentFeature());
-         this.info_den[0] = this.info_events[0] / this.info_pop[0];
+         this.info_den[0] = (this.info_events[0] / this.info_pop[0]) * 1000000;
       });
 
       query = '/query/dataset=' + this.dataset.datasetName + '/aggr=count' +
@@ -1403,7 +1403,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
       this.dataService.query(query).subscribe(data => {
          this.info_events[1] = data[0];
          this.info_pop[1] = this.getCountPop();
-         this.info_den[1] = this.info_events[1] / this.info_pop[1];
+         this.info_den[1] = (this.info_events[1] / this.info_pop[1]) * 1000000;
       });
    }
    updateInfo() {
@@ -1479,7 +1479,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
 
       const colorLegend = legendColor()
          .ascending(true)
-         .labelFormat(d3.format("0.3f"))
+         .labelFormat(this.getFormatter())
          .scale(scaleColor);
 
       svg.select('.legendDenQuant')
@@ -1568,8 +1568,13 @@ export class Demo3Component implements OnInit, AfterViewInit {
    formatThousandsSeperator(n) {
       return d3.format(",")(n);
    }
+
    formatDecimal(n) {
-      return d3.format("0.3f")(n);
+      return d3.format("0.2f")(n);
+   }
+
+   formatThousandsSeperatorDecimal(n) {
+      return d3.format(",.2f")(n);
    }
 
 
