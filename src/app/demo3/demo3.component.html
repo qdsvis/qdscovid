@@ -28,6 +28,7 @@
                            <svg id="svg-color-quant" class="on-map legend-color-map"></svg>
                            <svg id="svg-color-pop-quant" class="on-map legend-color-map"></svg>
                            <svg id="svg-color-den-quant" class="on-map legend-color-map"></svg>
+                           <svg id="svg-color-cat-quant" class="on-map legend-color-map"></svg>
                         </nb-card>
                         <nb-card class="map-card on-map" [formGroup]="options">
                            <div class="height-medium">
@@ -53,8 +54,21 @@
                               <section *ngIf="density.visible">
                                  <span class="nb-badge-custom">Densidade/1M:</span>{{ formatThousandsSeperatorDecimal(info_den[0]) }} - {{ formatThousandsSeperatorDecimal(info_den[1]) }}
                               </section>
+                              <section *ngIf="categorical.visible">
+                                 <span class="nb-badge-custom">Predominante:</span>{{ info_cat[0] }}
+                              </section>
+                              <section *ngIf="categorical.visible">
+                                 <span class="nb-badge-custom">Quantidade:</span>{{ formatThousandsSeperator(info_cat[1]) }}
+                              </section>
+                              <section *ngIf="categorical.visible">
+                                 <span class="nb-badge-custom">Total:</span>{{ formatThousandsSeperator(info_cat[2]) }}
+                              </section>
+                              <section *ngIf="categorical.visible">
+                                 <span class="nb-badge-custom">Porcentagem:</span>{{ formatThousandsSeperatorDecimal(info_cat[3]) }}%
+                              </section>
                            </div>
-                           <div class="height-small">
+
+                           <div class="height-small" *ngIf="aggr_values.length > 1">
                               <section>
                                  <span class="nb-badge-custom nb-color-danger">Agregação:</span>
                                  <nb-card-body class="col-xl-12">

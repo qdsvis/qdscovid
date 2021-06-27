@@ -27,6 +27,8 @@ export class SchemaService {
          'registersLabel': 'Registros',
          'timeStep': 86400,
 
+         'have_categorical_dominance_map': false,
+
          'identifier': 'track_id',
          'trajectory': 'direction_t',
 
@@ -149,6 +151,10 @@ export class SchemaService {
          'datasetLabel': 'Dados por Sintomas',
          'registersLabel': 'Sintomas',
          'timeStep': 86400,
+
+         'have_categorical_dominance_map': true,
+         'dominance_dim_map': "sintomas",
+         'dominance_dim_label': "Sintomas Predominantes",
 
          'identifier': 'track_id',
          'trajectory': 'direction_t',
@@ -290,6 +296,10 @@ export class SchemaService {
          'datasetLabel': 'Dados por Condições',
          'registersLabel': 'Condições',
          'timeStep': 86400,
+
+         'have_categorical_dominance_map': true,
+         'dominance_dim_map': "condicoes",
+         'dominance_dim_label': "Condições Predominantes",
 
          'identifier': 'track_id',
          'trajectory': 'direction_t',

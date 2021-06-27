@@ -107,7 +107,10 @@ export class Demo3Component implements OnInit, AfterViewInit {
    private marker: Marker;
 
    dataset: any;
+
    registersLabel: string;
+   have_categorical_dominance_map: boolean
+   dominance_dim_label: string
 
    options: FormGroup;
 
@@ -168,6 +171,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
    info_events = [0, 0];
    info_pop = [0, 0];
    info_den = [0, 0];
+   info_cat = ['', 0.0, 0.0, 0.0]
 
    ableToGetData = true;
 
@@ -178,7 +182,9 @@ export class Demo3Component implements OnInit, AfterViewInit {
    range_map = {
       'normal': ['#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#253494', '#081d58'],
       'normal_2': ['#ffffd9','#edf8b1','#c7e9b4','#7fcdbb','#41b6c4','#1d91c0','#225ea8','#253494','#081d58', '#cb181d', '#67000d'],
-      // 'normal_2': ['#fcf9aa', '#fce11d', '#f9Be04', '#f98e04', '#ed5603', '#d21a7c', '#9f059b', '#5b0298', '#120476']
+      'custom_paired': ['#1f78b4', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a', '#b15928', '#a6cee3', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99'],
+      'category20': ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c', '#98df8a', '#d62728', '#ff9896', '#9467bd', '#c5b0d5', '#8c564b', '#c49c94' , '#e377c2', '#f7b6d2', '#7f7f7f', '#c7c7c7', '#bcbd22', '#dbdb8d', '#17becf', '#9edae5'],
+      'category20c': ['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#756bb1', '#9e9ac8', '#bcbddc', '#dadaeb', '#636363', '#969696', '#bdbdbd', '#d9d9d9'],
    }
    color_map = {
       'normal': (dim) => d3.scaleQuantile<string>()
@@ -194,6 +200,10 @@ export class Demo3Component implements OnInit, AfterViewInit {
       'normal_den': (dim) => d3.scaleQuantile<string>()
          .domain(this.domainOutlier(this.geo.json_min_max_den.get(dim), this.range_map.normal.length))
          .range(this.rangeOutlier(this.geo.json_min_max_den.get(dim), this.range_map.normal)),
+
+      'normal_cat': d3.scaleOrdinal()
+         .domain(this.domainCategorical())
+         .range(d3.schemeSet1),
 
       'ryw': (count) => {
          const lc = Math.log(count) / Math.log(100);
@@ -213,10 +223,16 @@ export class Demo3Component implements OnInit, AfterViewInit {
    health = {
       visible: true
    };
+
    population = {
       visible: true
    };
+
    density = {
+      visible: true
+   };
+
+   categorical = {
       visible: true
    };
 
@@ -227,10 +243,15 @@ export class Demo3Component implements OnInit, AfterViewInit {
    private MiddleRegionLayer: L.GridLayer;
    private BottomRegionLayer: L.GridLayer;
    private TopRegionLayer: L.GridLayer;
+
    private BottomPopRegionLayer: L.GridLayer;
    private TopPopRegionLayer: L.GridLayer;
+
    private BottomDenRegionLayer: L.GridLayer;
    private TopDenRegionLayer: L.GridLayer;
+
+   private BottomCatRegionLayer: L.GridLayer;
+   private TopCatRegionLayer: L.GridLayer
 
    private layersControl;
    private toastrComponent;
@@ -302,6 +323,14 @@ export class Demo3Component implements OnInit, AfterViewInit {
       return newRange;
    }
 
+   domainCategorical() {
+      if (this.dataset == undefined) {
+         return []
+      }
+
+      return this.dataset.aliases[this.dataset['dominance_dim_map']]
+   }
+
    population_code(feature, region?) {
       if (region == undefined) {
          region = this.currRegion;
@@ -315,8 +344,10 @@ export class Demo3Component implements OnInit, AfterViewInit {
             return feature.properties.population;
       }
    }
+
    getCountPop(feature?) {
       let self = this;
+
       if (self.geo.json_value.get(this.getCurrRegion()) == undefined) {
          return this.maximumPop;
       }
@@ -324,6 +355,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
       if (self.geo.json_value.get(this.getCurrRegion()).size == 0) {
          return this.maximumPop;
       }
+
       if (feature) {
          return this.population_code(feature);
       }
@@ -530,12 +562,15 @@ export class Demo3Component implements OnInit, AfterViewInit {
                if (value.length) {
                   let curr_minmax = self.geo.json_min_max.get(dim);
                   self.geo.json_value.set(dim, new Map());
+                  self.geo.json_value_cat.set(dim, new Map())
 
                   value.map((el) => {
                      if (!isNaN(el[1])) {
                         curr_minmax[0] = Math.min(curr_minmax[0], el[1]);
                         curr_minmax[1] = Math.max(curr_minmax[1], el[1]);
+
                         self.geo.json_value.get(dim).set(this.dataset.aliases[dim][el[0]].toUpperCase(), [el[0], el[1]]);
+                        self.geo.json_value_cat.get(dim).set(this.dataset.aliases[dim][el[0]].toUpperCase(), [el[0], NaN, NaN, NaN, NaN])
                      }
                   });
 
@@ -577,7 +612,75 @@ export class Demo3Component implements OnInit, AfterViewInit {
                   self.geo.json_min_max_den.set(dim, [densities[0], densities[densities.length - 1], q1, q3, iqr])
                }
 
-               resolve(true);
+               if (this.have_categorical_dominance_map) {
+                  let dominance_dim_map = this.dataset['dominance_dim_map']
+                  var indexs = Array()
+                  var requests = Array()
+
+                  for (var i = 0; i < this.dataset.aliases[dominance_dim_map].length; i++) {
+                     let query = '/query' +
+                        '/dataset=' + self.dataset.datasetName +
+                        this.getAggr() +
+                        constrainsts +
+                        '/const=' + dominance_dim_map + '.values.(' + i + ')' +
+                        '/const=' + dim + '.values.(all)/group=' + dim;
+
+                     indexs.push(i)
+                     requests.push(query)
+                  }
+
+                  self.dataService.queryMultiple(indexs, requests).subscribe(responseList => {
+                     responseList.forEach((value) => {
+                        let valueCat = value[0]
+                        let index = value['index']
+
+                        if (valueCat.length) {
+                           valueCat.map((el) => {
+                              if (!isNaN(el[1])) {
+                                 let region = self.geo.json_value_cat.get(dim).get(this.dataset.aliases[dim][el[0]].toUpperCase())
+
+                                 var region_per = NaN
+                                 var region_tot = NaN
+
+                                 if (region != undefined) {
+                                    region_per = region[1]
+                                    region_tot = region[3]
+                                 }
+
+                                 if (self.geo.json_value_cat.get(dim).get(this.dataset.aliases[dim][el[0]].toUpperCase()) == undefined) {
+                                    self.geo.json_value_cat.get(dim).set(this.dataset.aliases[dim][el[0]].toUpperCase(), [el[0], NaN, NaN, NaN, NaN])
+                                 }
+
+                                 if (isNaN(region_per)) {
+                                    self.geo.json_value_cat.get(dim).get(this.dataset.aliases[dim][el[0]].toUpperCase())[1] = el[1]
+                                    self.geo.json_value_cat.get(dim).get(this.dataset.aliases[dim][el[0]].toUpperCase())[2] = this.dataset.aliases[dominance_dim_map][index]
+                                    self.geo.json_value_cat.get(dim).get(this.dataset.aliases[dim][el[0]].toUpperCase())[4] = index
+                                 }
+                                 else {
+                                    if (el[1] > region_per) {
+                                       self.geo.json_value_cat.get(dim).get(this.dataset.aliases[dim][el[0]].toUpperCase())[1] = el[1]
+                                       self.geo.json_value_cat.get(dim).get(this.dataset.aliases[dim][el[0]].toUpperCase())[2] = this.dataset.aliases[dominance_dim_map][index]
+                                       self.geo.json_value_cat.get(dim).get(this.dataset.aliases[dim][el[0]].toUpperCase())[4] = index
+                                    }
+                                 }
+
+                                 if (isNaN(region_tot)) {
+                                    self.geo.json_value_cat.get(dim).get(this.dataset.aliases[dim][el[0]].toUpperCase())[3] = el[1]
+                                 }
+                                 else {
+                                    self.geo.json_value_cat.get(dim).get(this.dataset.aliases[dim][el[0]].toUpperCase())[3] += el[1]
+                                 }
+                              }
+                           });
+                        }
+                     })
+
+                     resolve(true)
+                  })
+               }
+               else {
+                  resolve(true)
+               }
             });
          });
       };
@@ -645,6 +748,8 @@ export class Demo3Component implements OnInit, AfterViewInit {
          let getLayerColor = (feature, dim, key) => {
             let r_code = String(this.region_code(feature));
             let value = undefined;
+            let relative_opacity = 1.0
+
             if (key == "curr")
                value = self.geo.json_value.get(dim).get(r_code.toUpperCase());
             else if (key == "curr_pop") {
@@ -657,20 +762,43 @@ export class Demo3Component implements OnInit, AfterViewInit {
                let deno = this.population_code(feature);
                value = (nume == undefined) ? undefined : ((nume[1] / deno) * 1000000);
             }
+            else if (key == "curr_cat") {
+               let values = self.geo.json_value_cat.get(dim).get(r_code.toUpperCase())
+
+               if (values != undefined) {
+                  let max = values[1]
+                  let predominant = values[2]
+                  let total = values[3]
+
+                  value = predominant
+                  relative_opacity = (max / total ) * 2
+
+                  if (relative_opacity >= 0.75) relative_opacity = 1.0
+                  else if (relative_opacity >= 0.5) relative_opacity = 0.75
+                  else if (relative_opacity >= 0.25) relative_opacity = 0.5
+                  else relative_opacity = 0.25
+               }
+            }
             let style = <any>{};
             if (value != undefined) {
+               style.color = 'black';
+               style.weight = 0.2;
+               style.opacity = 0.70;
+               style.fillOpacity = 0.70;
+
                if (key == "curr")
                   style.fillColor = self.color(dim)(value[1]);
                else if (key == "curr_pop")
                   style.fillColor = self.color_map["normal_pop"](dim)(value);
                else if (key == "curr_den")
                   style.fillColor = self.color_map["normal_den"](dim)(value);
+               else if (key == "curr_cat") {
+                  style.fillColor = self.color_map["normal_cat"](value)
+                  style.opacity = 0.90 * relative_opacity
+                  style.fillOpacity = 0.90 * relative_opacity
+               }
                else
                   style.fillColor = 'rgba(0,0,0,0)';
-               style.color = 'black';
-               style.weight = 0.2;
-               style.opacity = 0.70;
-               style.fillOpacity = 0.70;
             }
             else {
                style.fillColor = 'rgba(0,0,0,0)';
@@ -751,10 +879,12 @@ export class Demo3Component implements OnInit, AfterViewInit {
          self.health.visible = true;
          self.population.visible = false;
          self.density.visible = false;
+         self.categorical.visible = false;
+
          self.loadLegend(self.getCurrRegion());
 
          let getLayerByKey = (key) => {
-            if (key == 'curr' || key == 'curr_pop' || key == "curr_den") {
+            if (key == 'curr' || key == 'curr_pop' || key == "curr_den" || key == 'curr_cat') {
                return self.getCurrRegion();
             }
             else {
@@ -770,7 +900,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
                updateWhenZooming: false,
 
                style: (feature) => {
-                  if (key == 'prev' || key == "prev_pop" || key == "prev_den") {
+                  if (key == 'prev' || key == "prev_pop" || key == "prev_den" || key == 'prev_cat') {
                      return { fillColor: 'rgba(0,0,0,0)', color: 'black', weight: 2.0, opacity: 1.0, fillOpacity: 0.0 };
                   }
                   else {
@@ -778,7 +908,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
                   }
                },
                onEachFeature: (feature, layer) => {
-                  if (key == 'curr' || key == 'curr_pop' || key == "curr_den") {
+                  if (key == 'curr' || key == 'curr_pop' || key == "curr_den" || key === 'curr_cat') {
                      layer.on({
                         mouseover: (el) => layerOnMouseOver(feature, el, self.getCurrRegion(), key),
                         mouseout: (el) => layerOnMouseOut(feature, el, self.getCurrRegion(), key),
@@ -791,10 +921,15 @@ export class Demo3Component implements OnInit, AfterViewInit {
 
          if (this.BottomRegionLayer) this.mapService.map.removeLayer(this.BottomRegionLayer);
          if (this.TopRegionLayer) this.mapService.map.removeLayer(this.TopRegionLayer);
+
          if (this.BottomPopRegionLayer) this.mapService.map.removeLayer(this.BottomPopRegionLayer);
          if (this.TopPopRegionLayer) this.mapService.map.removeLayer(this.TopPopRegionLayer);
+
          if (this.BottomDenRegionLayer) this.mapService.map.removeLayer(this.BottomDenRegionLayer);
          if (this.TopDenRegionLayer) this.mapService.map.removeLayer(this.TopDenRegionLayer);
+
+         if (this.BottomCatRegionLayer) this.mapService.map.removeLayer(this.BottomCatRegionLayer)
+         if (this.TopCatRegionLayer) this.mapService.map.removeLayer(this.TopCatRegionLayer)
 
          this.BottomRegionLayer = getLayer('prev');
          this.TopRegionLayer = getLayer('curr');
@@ -823,11 +958,24 @@ export class Demo3Component implements OnInit, AfterViewInit {
             zIndex: 1000
          });
 
+         this.BottomCatRegionLayer = getLayer('prev_cat');
+         this.TopCatRegionLayer = getLayer('curr_cat');
+         this.TopCatRegionLayer.on('add', this.onRegionCatAdd, this);
+         this.TopCatRegionLayer.on('remove', this.onRegionCatRemove, this);
+
+         let map_category = L.layerGroup([this.BottomCatRegionLayer, this.MiddleRegionLayer, this.TopCatRegionLayer], {
+            zIndex: 1000
+         });
+
          let overlay_maps = {}
 
          overlay_maps[this.registersLabel] = agiradom
          overlay_maps["População"] = map_population
          overlay_maps["Densidade/1M"] = map_density
+
+         if (this.have_categorical_dominance_map) {
+            overlay_maps[this.dominance_dim_label] = map_category
+         }
 
          if (this.layersControl) this.layersControl.remove(this.mapService.map);
          this.layersControl = L.control.layers(overlay_maps, null, {
@@ -1340,25 +1488,37 @@ export class Demo3Component implements OnInit, AfterViewInit {
       let promises = this.getMapPromises();
 
       Promise.all(promises).then(() => {
-         this.loadLegend(this.getCurrRegion());
-         this.loadPopLegend(this.getCurrRegion());
-         this.loadDenLegend(this.getCurrRegion());
-
          let prev_data = this.geo.json.get(this.getPrevRegion());
          let curr_data = this.geo.json.get(this.getCurrRegion());
 
          this.BottomRegionLayer.clearLayers();
          this.BottomRegionLayer.addData(prev_data);
+
          this.TopRegionLayer.clearLayers();
          this.TopRegionLayer.addData(curr_data);
+
          this.BottomPopRegionLayer.clearLayers();
          this.BottomPopRegionLayer.addData(prev_data);
+
          this.TopPopRegionLayer.clearLayers();
          this.TopPopRegionLayer.addData(curr_data);
+
          this.BottomDenRegionLayer.clearLayers();
          this.BottomDenRegionLayer.addData(prev_data);
+
          this.TopDenRegionLayer.clearLayers();
          this.TopDenRegionLayer.addData(curr_data);
+
+         this.BottomCatRegionLayer.clearLayers()
+         this.BottomCatRegionLayer.addData(prev_data)
+
+         this.TopCatRegionLayer.clearLayers()
+         this.TopCatRegionLayer.addData(curr_data)
+
+         this.loadLegend(this.getCurrRegion());
+         this.loadPopLegend(this.getCurrRegion());
+         this.loadDenLegend(this.getCurrRegion());
+         this.loadCatLegend(this.getCurrRegion())
       });
    }
 
@@ -1376,6 +1536,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
          this.info_name = this.schemaService.getGlobal()['worldLabel'];
       }
    }
+
    updateInfoData() {
       let query = '/query/dataset=' + this.dataset.datasetName + '/aggr=count' +
          this.getBarCategoricalConst() +
@@ -1405,7 +1566,24 @@ export class Demo3Component implements OnInit, AfterViewInit {
          this.info_pop[1] = this.getCountPop();
          this.info_den[1] = (this.info_events[1] / this.info_pop[1]) * 1000000;
       });
+
+      if (this.getCurrentFeature()) {
+         let r_code = String(this.region_code(this.getCurrentFeature()));
+         let value_region_cat = this.geo.json_value_cat.get(this.getCurrRegion()).get(r_code.toUpperCase())
+
+         if (value_region_cat == undefined) {
+            this.info_cat = ["", 0.0, 0.0, 0.0]
+         }
+         else {
+            this.info_cat[0] = this.dataset.aliases[this.dataset['dominance_dim_map'] + "_desc"][value_region_cat[4]]
+            this.info_cat[1] = value_region_cat[1]
+            this.info_cat[2] = value_region_cat[3]
+            this.info_cat[3] = (value_region_cat[1] / value_region_cat[3]) * 100
+         }
+      }
+
    }
+
    updateInfo() {
       this.updateInfoName();
       this.updateInfoData();
@@ -1415,6 +1593,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
    getCurrRegion() {
       return this.schemaService.getGlobal()["regionCategoricalDimension"][this.currRegion];
    }
+
    loadWorldLayer() {
       let self = this;
 
@@ -1464,6 +1643,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
       svg.select('.legendPopQuant')
          .call(colorLegend);
    }
+
    loadDenLegend(dim) {
       const svg = d3.select('#svg-color-den-quant');
       svg.selectAll('*').remove();
@@ -1486,29 +1666,66 @@ export class Demo3Component implements OnInit, AfterViewInit {
          .call(colorLegend);
    }
 
+   loadCatLegend(dim) {
+      const svg = d3.select('#svg-color-cat-quant');
+      svg.selectAll('*').remove();
+
+      if (!this.categorical.visible)
+         return;
+
+      svg.append('g')
+         .attr('class', 'legendCatQuant')
+         .attr('transform', 'translate(0, 0)');
+
+      let scaleColor = this.color_map["normal_cat"];
+
+      const colorLegend = legendColor()
+         .ascending(true)
+         .labelFormat(this.getFormatter())
+         .scale(scaleColor);
+
+      svg.select('.legendCatQuant')
+         .call(colorLegend);
+   }
+
    onRegionAdd() {
       this.health.visible = true;
       this.loadLegend(this.getCurrRegion());
    }
+
    onRegionRemove() {
       this.health.visible = false;
       this.loadLegend(this.getCurrRegion());
    }
+
    onRegionPopAdd() {
       this.population.visible = true;
       this.loadPopLegend(this.getCurrRegion());
    }
+
    onRegionPopRemove() {
       this.population.visible = false;
       this.loadPopLegend(this.getCurrRegion());
    }
+
    onRegionDenAdd() {
       this.density.visible = true;
       this.loadDenLegend(this.getCurrRegion());
    }
+
    onRegionDenRemove() {
       this.density.visible = false;
       this.loadDenLegend(this.getCurrRegion());
+   }
+
+   onRegionCatAdd() {
+      this.categorical.visible = true
+      this.loadCatLegend(this.getCurrRegion())
+   }
+
+   onRegionCatRemove() {
+      this.categorical.visible = false
+      this.loadCatLegend(this.getCurrRegion())
    }
 
    onMapMoveStart() {
@@ -1788,6 +2005,8 @@ export class Demo3Component implements OnInit, AfterViewInit {
             }
             this.dataset = this.schemaService.get(param);
             this.registersLabel = this.dataset.registersLabel
+            this.dominance_dim_label = this.dataset.dominance_dim_label
+            this.have_categorical_dominance_map = this.dataset.have_categorical_dominance_map
             this.initialize();
          }
          else {

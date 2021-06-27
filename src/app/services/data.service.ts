@@ -4,6 +4,7 @@ import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 
 import { Observable } from 'rxjs/Observable';
+import { forkJoin } from 'rxjs';
 
 @Injectable()
 export class DataService {
@@ -22,21 +23,32 @@ export class DataService {
 
 
    query(action: string, complete=false): Observable<any> {
-      if(complete==true){
-         return this.http
-            .get(action)
-            .map(response => response.json());
-      }
       return this.http
-         .get(this.config.ServerWithApiUrl + action)
-         .map(response => response.json());
+            .get(complete ? action : (this.config.ServerWithApiUrl + action))
+            .map(response => response.json());
    }
 
-   // query(action: string): Observable<any> {
-   //    return this.http
-   //    .get(this.config.ServerWithApiUrl + action)
-   //    .map(response => response.json());
-   // }
+   queryMultiple(indexs: Number[], actions: string[], complete = false) {
+      var responses = new Array()
+
+      for (var i = 0; i < indexs.length; i++) {
+         let index = indexs[i]
+         let action = actions[i]
+
+         let value = this.http
+            .get(complete ? action : (this.config.ServerWithApiUrl + action))
+            .map(response => {
+               let result = response.json()
+               result.index = index
+               return result
+            });
+
+         responses.push(value)
+      }
+
+      return forkJoin(responses)
+   }
+
 
    schema(action: string): Observable<any> {
       return this.http

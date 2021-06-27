@@ -14,6 +14,7 @@ export class GeoDataService {
    public json_min_max_pop = new Map();
    public json_min_max_den = new Map();
    public json_selected = new Map();
+   public json_value_cat = new Map()
 
    private headers = new HttpHeaders({
       // 'Cache-control': 'public'
