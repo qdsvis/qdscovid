@@ -24,7 +24,7 @@ export class MapService {
 
    load_CRSSimple() {
       this.map = L.map('map', {
-         crs: L.CRS.Simple
+         crs: L.CRS.Simple,
       });
 
       var bounds = [[-512, -512], [512, 512]];
@@ -41,7 +41,9 @@ export class MapService {
    load_CRSEPSG3857() {
       this.map = L.map('map', {
          worldCopyJump: true,
-         zoomControl: false
+         zoomControl: false,
+         zoomSnap: 0,
+         zoomDelta: 0.1,
       }).setView(this.lastPosition.center, this.lastPosition.zoom);
 
 
@@ -74,7 +76,7 @@ export class MapService {
       this.map.addLayer(new DebugLayer());
    }
 
-   flyTo(location: Location): void {    
+   flyTo(location: Location): void {
       this.map.flyToBounds(location.viewBounds, { duration: 3.0 });
    }
 
