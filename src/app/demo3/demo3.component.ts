@@ -330,6 +330,10 @@ export class Demo3Component implements OnInit, AfterViewInit {
          return []
       }
 
+      if (!this.have_categorical_dominance_map) {
+         return []
+      }
+
       return this.dataset.aliases[this.dataset['dominance_dim_map']]
    }
 
@@ -753,10 +757,12 @@ export class Demo3Component implements OnInit, AfterViewInit {
       let self = this;
       let promises = self.getMapPromises();
 
-      const range = this.domainCategorical();
-      self.color_map["normal_cat"] = d3.scaleOrdinal()
-         .domain(range)
-         .range(self.rangeColorCategorical());
+      if (this.have_categorical_dominance_map) {
+         const range = this.domainCategorical();
+         self.color_map["normal_cat"] = d3.scaleOrdinal()
+            .domain(range)
+            .range(self.rangeColorCategorical());
+      }
 
       Promise.all(promises).then(() => {
          let getLayerColor = (feature, dim, key) => {
