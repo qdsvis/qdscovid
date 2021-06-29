@@ -790,7 +790,6 @@ export class Demo3Component implements OnInit, AfterViewInit {
                   let total = values[3]
 
                   value = predominant
-                  // value = values[4]
                   relative_opacity = (max / total ) * 2
 
                   if (relative_opacity >= 0.75) relative_opacity = 1.0
@@ -813,11 +812,9 @@ export class Demo3Component implements OnInit, AfterViewInit {
                else if (key == "curr_den")
                   style.fillColor = self.color_map["normal_den"](dim)(value);
                else if (key == "curr_cat") {
-                  // style.fillColor = self.color_map["normal_cat"](colorsSorted[mapCatToInt[value]])
-                  // style.fillColor = self.color_map["normal_cat"](colorsSorted[value])
                   style.fillColor = self.color_map["normal_cat"](value)
-                  style.opacity = 0.90 * relative_opacity
-                  style.fillOpacity = 0.90 * relative_opacity
+                  // TODO: Ver se implementar um botão par isso: style.opacity = 0.90 * relative_opacity
+                  // TODO: Ver se implementar um botão par isso: style.fillOpacity = 0.90 * relative_opacity
                }
                else
                   style.fillColor = 'rgba(0,0,0,0)';
