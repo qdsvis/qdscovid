@@ -183,9 +183,11 @@ export class Demo3Component implements OnInit, AfterViewInit {
       'normal': ['#ffffd9', '#edf8b1', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#253494', '#081d58'],
       'normal_2': ['#ffffd9','#edf8b1','#c7e9b4','#7fcdbb','#41b6c4','#1d91c0','#225ea8','#253494','#081d58', '#cb181d', '#67000d'],
       'custom_paired': ['#1f78b4', '#33a02c', '#e31a1c', '#ff7f00', '#6a3d9a', '#b15928', '#a6cee3', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99'],
+      'category10': ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'],
       'category20': ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c', '#98df8a', '#d62728', '#ff9896', '#9467bd', '#c5b0d5', '#8c564b', '#c49c94' , '#e377c2', '#f7b6d2', '#7f7f7f', '#c7c7c7', '#bcbd22', '#dbdb8d', '#17becf', '#9edae5'],
       'category20c': ['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#756bb1', '#9e9ac8', '#bcbddc', '#dadaeb', '#636363', '#969696', '#bdbdbd', '#d9d9d9'],
    }
+
    color_map = {
       'normal': (dim) => d3.scaleQuantile<string>()
          .domain(this.domainQuantile(this.geo.json_min_max.get(dim), this.range_map.normal_2.length))
@@ -203,7 +205,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
 
       'normal_cat': d3.scaleOrdinal()
          .domain(this.domainCategorical())
-         .range(d3.schemeSet1),
+         .range(this.rangeColorCategorical()),
 
       'ryw': (count) => {
          const lc = Math.log(count) / Math.log(100);
@@ -329,6 +331,13 @@ export class Demo3Component implements OnInit, AfterViewInit {
       }
 
       return this.dataset.aliases[this.dataset['dominance_dim_map']]
+   }
+
+   rangeColorCategorical () {
+      if (this.domainCategorical().length <= 10) {
+         return this.range_map.category10;
+      }
+      return this.range_map.category20;
    }
 
    population_code(feature, region?) {
@@ -744,6 +753,11 @@ export class Demo3Component implements OnInit, AfterViewInit {
       let self = this;
       let promises = self.getMapPromises();
 
+      const range = this.domainCategorical();
+      self.color_map["normal_cat"] = d3.scaleOrdinal()
+         .domain(range)
+         .range(self.rangeColorCategorical());
+
       Promise.all(promises).then(() => {
          let getLayerColor = (feature, dim, key) => {
             let r_code = String(this.region_code(feature));
@@ -764,13 +778,13 @@ export class Demo3Component implements OnInit, AfterViewInit {
             }
             else if (key == "curr_cat") {
                let values = self.geo.json_value_cat.get(dim).get(r_code.toUpperCase())
-
                if (values != undefined) {
                   let max = values[1]
                   let predominant = values[2]
                   let total = values[3]
 
                   value = predominant
+                  // value = values[4]
                   relative_opacity = (max / total ) * 2
 
                   if (relative_opacity >= 0.75) relative_opacity = 1.0
@@ -793,6 +807,8 @@ export class Demo3Component implements OnInit, AfterViewInit {
                else if (key == "curr_den")
                   style.fillColor = self.color_map["normal_den"](dim)(value);
                else if (key == "curr_cat") {
+                  // style.fillColor = self.color_map["normal_cat"](colorsSorted[mapCatToInt[value]])
+                  // style.fillColor = self.color_map["normal_cat"](colorsSorted[value])
                   style.fillColor = self.color_map["normal_cat"](value)
                   style.opacity = 0.90 * relative_opacity
                   style.fillOpacity = 0.90 * relative_opacity
