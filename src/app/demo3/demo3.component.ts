@@ -1589,7 +1589,7 @@ export class Demo3Component implements OnInit, AfterViewInit {
          this.info_den[1] = (this.info_events[1] / this.info_pop[1]) * 1000000;
       });
 
-      if (this.getCurrentFeature()) {
+      if (this.getCurrentFeature() && this.have_categorical_dominance_map) {
          let r_code = String(this.region_code(this.getCurrentFeature()));
          let value_region_cat = this.geo.json_value_cat.get(this.getCurrRegion()).get(r_code.toUpperCase())
 
@@ -1603,7 +1603,6 @@ export class Demo3Component implements OnInit, AfterViewInit {
             this.info_cat[3] = (value_region_cat[1] / value_region_cat[3]) * 100
          }
       }
-
    }
 
    updateInfo() {
