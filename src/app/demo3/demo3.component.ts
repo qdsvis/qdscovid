@@ -758,10 +758,9 @@ export class Demo3Component implements OnInit, AfterViewInit {
       let promises = self.getMapPromises();
 
       if (this.have_categorical_dominance_map) {
-         const range = this.domainCategorical();
          self.color_map["normal_cat"] = d3.scaleOrdinal()
-            .domain(range)
-            .range(self.rangeColorCategorical());
+            .domain(this.domainCategorical())
+            .range(self.rangeColorCategorical())
       }
 
       Promise.all(promises).then(() => {
@@ -1694,6 +1693,10 @@ export class Demo3Component implements OnInit, AfterViewInit {
       svg.append('g')
          .attr('class', 'legendCatQuant')
          .attr('transform', 'translate(0, 0)');
+
+      this.color_map["normal_cat"] = d3.scaleOrdinal()
+         .domain(this.domainCategorical())
+         .range(this.rangeColorCategorical());
 
       let scaleColor = this.color_map["normal_cat"];
 
