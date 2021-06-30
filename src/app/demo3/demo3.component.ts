@@ -829,7 +829,13 @@ export class Demo3Component implements OnInit, AfterViewInit {
             // selected layer
             if (self.geo.json_selected.get(dim).get(feature)) {
                style.weight = 4.0;
-               style.fillColor = 'darkorange';
+
+               if (self.categorical.visible) {
+                  style.fillColor = '#b3b3b3';
+               }
+               else {
+                  style.fillColor = 'darkorange';
+               }
             }
 
             return style;
