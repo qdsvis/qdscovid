@@ -40,6 +40,8 @@ export class LineChartComponent implements Widget, OnInit, AfterViewInit, OnDest
 
    dat_lower = 0;
    dat_upper = 0;
+   brushedBegin: any;
+   brushedEnd:  any;
 
    range_map = {
       'normal': ['#a50026', '#d73027', '#f46d43', '#fdae61', '#fee08b', '#ffffbf', '#d9ef8b', '#a6d96a', '#66bd63', '#1a9850', '#006837'].reverse(),
@@ -257,6 +259,9 @@ export class LineChartComponent implements Widget, OnInit, AfterViewInit, OnDest
       const svg = d3.select('#' + this.uniqueId)
          .append('svg')
          .attr('viewBox', '0 0 ' + container.width + ' ' + container.height)
+         .on('dblclick', function () {
+            self.broadcast(self.brushedBegin, self.brushedEnd);
+         })
          .append('g')
          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
       //@END OLD
@@ -268,6 +273,20 @@ export class LineChartComponent implements Widget, OnInit, AfterViewInit, OnDest
          .attr("x", 0)
          .attr("y", 0);
 
+      let classSpan = 'nb-badge-custom';
+
+      svg.append("text")
+         .attr("id", "click-to-update")
+         .attr('fill','#717c95')
+         .style("font-weight", "bold")
+         .style("font-size", "1.1rem")
+         .attr("dx", 10)
+         .attr("dy", "0em")
+         .attr("cursor", "move")
+         .text("Atualizar")
+         .on('click', function () {
+            self.broadcast(self.brushedBegin, self.brushedEnd);
+         });
       svg.append("text")
          .attr("id", "date-from")
          .text("")
@@ -277,7 +296,6 @@ export class LineChartComponent implements Widget, OnInit, AfterViewInit, OnDest
          .attr("dx", width-200)
          .attr("dy", "0.1em");
       svg.append("text")
-         .attr("id", "date-from")
          .text(" - ")
          .attr('fill','#717c95')
          .style("font-weight", "bold")
@@ -488,7 +506,10 @@ export class LineChartComponent implements Widget, OnInit, AfterViewInit, OnDest
          svg.select("#date-from").text(x2.invert(s[0]).toLocaleDateString("pt-BR"));
          svg.select("#date-to").text(x2.invert(s[1]).toLocaleDateString("pt-BR"));
          if (d3.event.sourceEvent && d3.event.sourceEvent.type === "mousemove") return;
-         self.broadcast(x2.invert(s[0]), x2.invert(s[1])); //Only called when is changed in web!
+         self.brushedBegin = x2.invert(s[0]);
+         self.brushedEnd = x2.invert(s[1]);
+         // self.broadcast(x2.invert(s[0]), x2.invert(s[1])); //Only called when is changed in web!
+
          x.domain(s.map(x2.invert, x2));
          Line_chart.select(".line").attr("d", line);
          focus.select(".axis--x").call(xAxis);

@@ -35,3 +35,14 @@ form {
    fill: none;
    pointer-events: all;
 }
+
+.nb-badge-custom {
+   border-radius: 0.45rem;
+   font-family: Open Sans, sans-serif;
+   font-size: 1rem;
+   font-weight: bold;
+   padding: 0.25rem 0.25rem;
+   margin: 0.3rem 0.05rem;
+   color: #ffffff;
+   background-color: #66B1D9;
+}
